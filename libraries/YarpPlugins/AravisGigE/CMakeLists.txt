@@ -42,3 +42,7 @@ else()
     set(ENABLE_AravisGigE OFF CACHE BOOL "Enable/disable AravisGigE device" FORCE)
 
 endif()
+
+find_package(OpenCV REQUIRED)
+include_directories(${OpenCV_INCLUDE_DIRS})
+target_link_libraries(AravisGigE ${OpenCV_LIBS})
