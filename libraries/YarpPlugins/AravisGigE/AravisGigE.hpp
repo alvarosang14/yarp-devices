@@ -24,7 +24,8 @@ namespace roboticslab
   */
 class AravisGigE : public yarp::dev::DeviceDriver,
                    public yarp::dev::IFrameGrabberImageRaw,
-                   public yarp::dev::IFrameGrabberControls
+                   public yarp::dev::IFrameGrabberControls,
+                   public yarp::dev::IFrameGrabberImage
 {
 public:
 
@@ -36,6 +37,7 @@ public:
 
     //  --------- IFrameGrabberImageRaw Declarations. Implementation in IFrameGrabberImageRawImpl.cpp ---------
     bool getImage(yarp::sig::ImageOf<yarp::sig::PixelMono> & image) override;
+    bool getImage(yarp::sig::ImageOf<yarp::sig::PixelRgb> &image) override;
     int height() const override;
     int width() const override;
 

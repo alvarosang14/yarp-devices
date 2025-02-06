@@ -22,6 +22,7 @@ if(NOT SKIP_AravisGigE)
                                DeviceDriverImpl.cpp
                                IFrameGrabberControlsImpl.cpp
                                IFrameGrabberImageRawImpl.cpp
+                               IFrameGrabberImageImpl.cpp
                                LogComponent.hpp
                                LogComponent.cpp)
 

@@ -56,7 +56,7 @@ bool AravisGigE::getImage(yarp::sig::ImageOf<yarp::sig::PixelMono> &image)
     {
         //-- Create a yarp image container according with the current pixel format
         yarp::sig::Image raw_image;
-        if (pixelFormat != ARV_PIXEL_FORMAT_MONO_8)
+        if (pixelFormat != ARV_PIXEL_FORMAT_MONO_8 && pixelFormat != ARV_PIXEL_FORMAT_BAYER_RG_8)
         {
             yCError(ARV) << "Unsupported pixel format";
         }
