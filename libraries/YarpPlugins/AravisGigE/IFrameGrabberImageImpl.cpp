@@ -52,14 +52,10 @@ bool AravisGigE::getImage(yarp::sig::ImageOf<yarp::sig::PixelRgb> &image) {
 
     auto *rgbData = reinterpret_cast<yarp::sig::PixelRgb *>(image.getRawImage());
 
-    /*
-    if (pixelFormat == ARV_PIXEL_FORMAT_BAYER_RG_8 || pixelFormat == ARV_PIXEL_FORMAT_MONO_8)
-    
-      */
     if (pixelFormat == ARV_PIXEL_FORMAT_BAYER_RG_8) {
         cv::Mat bayerImg(_height, _width, CV_8UC1, (void *)framebuffer);
         cv::Mat rgbImg;
-        cv::cvtColor(bayerImg, rgbImg, cv::COLOR_BayerRG2RGB);
+        cv::cvtColor(bayerImg, rgbImg, cv::COLOR_BayerRG2BGR);
 
         std::memcpy(image.getRawImage(), rgbImg.data, _width * _height * 3);
     } else if (pixelFormat == ARV_PIXEL_FORMAT_RGB_8_PACKED) {
