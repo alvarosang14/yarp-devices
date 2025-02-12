@@ -18,20 +18,22 @@ if(NOT SKIP_AravisGigE)
 
     link_directories(${ARAVIS_LIBRARY_DIRS})
 
-    yarp_add_plugin(AravisGigE AravisGigE.hpp
-                               DeviceDriverImpl.cpp
-                               IFrameGrabberControlsImpl.cpp
-                               IFrameGrabberImageRawImpl.cpp
-                               IFrameGrabberImageImpl.cpp
-                               LogComponent.hpp
-                               LogComponent.cpp)
+    file(GLOB ARAVISGIGE_SOURCES                ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
+                                                ${CMAKE_CURRENT_SOURCE_DIR}/src/Log/*.cpp
+                                                ${CMAKE_CURRENT_SOURCE_DIR}/src/Frame/*.cpp
+                                            )
+
+    yarp_add_plugin(AravisGigE ${ARAVISGIGE_SOURCES})
 
     target_link_libraries(AravisGigE YARP::YARP_os
                                      YARP::YARP_dev
                                      ${ARAVIS_LIBRARIES})
 
-    target_include_directories(AravisGigE PRIVATE ${ARAVIS_INCLUDE_DIRS})
-
+    target_include_directories(AravisGigE PRIVATE ${ARAVIS_INCLUDE_DIRS}
+                                                ${CMAKE_CURRENT_SOURCE_DIR}/src
+                                                ${CMAKE_CURRENT_SOURCE_DIR}/src/Log
+                                                ${CMAKE_CURRENT_SOURCE_DIR}/src/Frame)
+    
     yarp_install(TARGETS AravisGigE
                  LIBRARY DESTINATION ${ROBOTICSLAB-YARP-DEVICES_DYNAMIC_PLUGINS_INSTALL_DIR}
                  ARCHIVE DESTINATION ${ROBOTICSLAB-YARP-DEVICES_STATIC_PLUGINS_INSTALL_DIR}
@@ -46,3 +48,9 @@ endif()
 find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 target_link_libraries(AravisGigE ${OpenCV_LIBS})
+
+target_include_directories(AravisGigE
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/Log
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
