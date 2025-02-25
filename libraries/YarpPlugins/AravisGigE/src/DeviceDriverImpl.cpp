@@ -1,13 +1,13 @@
-#include "AravisGigE.hpp"
-
 #include <string>
 #include <unordered_set>
-
 #include <yarp/os/LogStream.h>
 
+#include "AravisGigE.hpp"
 #include "LogComponent.hpp"
 
 using namespace roboticslab;
+
+//AravisQtWindow *qtWindow = nullptr;
 
 bool AravisGigE::open(yarp::os::Searchable &config)
 {
@@ -62,6 +62,12 @@ bool AravisGigE::open(yarp::os::Searchable &config)
             yCInfo(ARV, "- %s (setting: %s)", availableFormatsNames[i], availableFormatsStrings[i]);
             availablePixelFormats.emplace(availableFormatsStrings[i]);
         }
+        
+        // formats in availablePixelFormats
+        yCInfo(ARV) << "Stored pixel formats in availablePixelFormats:";
+        for (const auto& format : availablePixelFormats) {
+            yCInfo(ARV) << format;
+        }
 
         g_free(availableFormatsStrings);
         g_free(availableFormatsNames);
@@ -71,6 +77,8 @@ bool AravisGigE::open(yarp::os::Searchable &config)
     {
         //-- Set pixel format
         auto requestedPixelFormatString = config.find("pixelFormat").asString();
+        
+        yCInfo(ARV) << "Requested pixel format:" << requestedPixelFormatString;
 
         if (availablePixelFormats.find(requestedPixelFormatString) == availablePixelFormats.end())
         {
@@ -197,6 +205,12 @@ bool AravisGigE::open(yarp::os::Searchable &config)
     arv_camera_set_acquisition_mode(camera, ARV_ACQUISITION_MODE_CONTINUOUS, nullptr);
     arv_device_set_string_feature_value(arv_camera_get_device(camera), "TriggerMode" , "Off", nullptr);
     arv_camera_start_acquisition(camera, nullptr);
+
+    /*
+    if (!qtWindow) {
+        qtWindow = new AravisQtWindow();
+        qtWindow->start();  // Inicia el hilo de la ventana Qt
+    }*/
 
     yCInfo(ARV) << "Aravis Camera acquisition started!";
     return true;

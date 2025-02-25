@@ -18,6 +18,7 @@ bool AravisGigE::getImage(yarp::sig::ImageOf<yarp::sig::PixelRgb> &image) {
     int max_tries = 10;
     int tries = 0;
     int success = false;
+
     while (!success && tries < max_tries) {
         arvBuffer = arv_stream_timeout_pop_buffer(stream, 200000);
         if (arvBuffer != nullptr && arv_buffer_get_status(arvBuffer) != ARV_BUFFER_STATUS_SUCCESS) {
@@ -25,6 +26,7 @@ bool AravisGigE::getImage(yarp::sig::ImageOf<yarp::sig::PixelRgb> &image) {
         } else {
             success = true;
         }
+        tries++;
     }
 
     if (arvBuffer != nullptr && success) {
