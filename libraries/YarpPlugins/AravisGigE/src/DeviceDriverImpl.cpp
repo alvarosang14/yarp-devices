@@ -73,29 +73,84 @@ bool AravisGigE::open(yarp::os::Searchable &config)
         g_free(availableFormatsNames);
     }
 
+    // ===================== Pruebas sobre pixel format ======================
     if (config.check("pixelFormat", "pixel format"))
-    {
-        //-- Set pixel format
-        auto requestedPixelFormatString = config.find("pixelFormat").asString();
-        
-        yCInfo(ARV) << "Requested pixel format:" << requestedPixelFormatString;
-
-        if (availablePixelFormats.find(requestedPixelFormatString) == availablePixelFormats.end())
-        {
-            yCError(ARV) << "Requested pixel format" << requestedPixelFormatString << "is not available";
+    {   
+        if (!config.check("introspection")) {
+            yCError(ARV) << "Flag introspection required!";
             return false;
         }
-
-        yCInfo(ARV) << "Setting pixel format to" << requestedPixelFormatString;
-
+    
+        //-- Detener adquisición (para probar si se evitan errores)
+        yCInfo(ARV) << "Stopping acquisition before changing pixel format...";
+        arv_camera_stop_acquisition(camera, nullptr);
+    
+        //-- Limpiar de buffers
+        if (stream) {
+            g_object_unref(stream);
+            stream = nullptr;
+        }
+    
+        auto requestedPixelFormatString = config.find("pixelFormat").asString();
+        
+        yCInfo(ARV) << "Requested pixel format: " << requestedPixelFormatString;
+    
+        if (availablePixelFormats.find(requestedPixelFormatString) == availablePixelFormats.end())
+        {
+            yCError(ARV) << "Requested pixel format " << requestedPixelFormatString << " is not available";
+            return false;
+        }
+    
+        //-- Nuevo formato
+        yCInfo(ARV) << "Setting pixel format to: " << requestedPixelFormatString;
         arv_camera_set_pixel_format_from_string(camera, requestedPixelFormatString.c_str(), nullptr);
+    
+        //-- Verificar si cambia (no cambia)
+        pixelFormat = arv_camera_get_pixel_format(camera, nullptr);
+        const char *appliedPixelFormatString = arv_camera_get_pixel_format_as_string(camera, nullptr);
+    
+        if (appliedPixelFormatString == nullptr || requestedPixelFormatString != appliedPixelFormatString) {
+            yCError(ARV) << "Pixel format change failed! Expected: " << requestedPixelFormatString
+                         << ", but got: " << (appliedPixelFormatString ? appliedPixelFormatString : "NULL");
+            return false;
+        }
+    
+        //-- Pequeña espera para ver si ayuda
+        yarp::os::Time::delay(0.1);
+    
+        //-- Crear un nuevo stream 
+        yCInfo(ARV) << "Creating new stream for the updated pixel format...";
+        stream = arv_camera_create_stream(camera, nullptr, nullptr, nullptr);
+    
+        if (stream == nullptr)
+        {
+            yCError(ARV) << "Could not create Aravis stream";
+            return false;
+        }
+    
+        //-- Reconfigurar
+        g_object_set(stream, "socket-buffer", ARV_GV_STREAM_SOCKET_BUFFER_AUTO, "socket-buffer-size", 0, nullptr);
+        g_object_set(stream, "packet-resend", ARV_GV_STREAM_PACKET_RESEND_NEVER, nullptr);
+        g_object_set(stream, "packet-timeout", (unsigned) 40000, "frame-retention", (unsigned) 200000, nullptr);
+    
+        guint payload = arv_camera_get_payload(camera, nullptr);
+    
+        //-- Añadir nuevos buffer
+        yCInfo(ARV) << "Adding buffers for the new pixel format...";
+        for (int i = 0; i < 10; i++) {
+            arv_stream_push_buffer(stream, arv_buffer_new(payload, nullptr));
+        }
+    
+        //-- Iniciar adquisición tras todo el cambio
+        yCInfo(ARV) << "Restarting acquisition...";
+        arv_camera_start_acquisition(camera, nullptr);
     }
     else
     {
-        yCInfo(ARV) << "Using pixel format:" << arv_camera_get_pixel_format_as_string(camera, nullptr);
+        yCInfo(ARV) << "Using pixel format: " << arv_camera_get_pixel_format_as_string(camera, nullptr);
     }
-
-    pixelFormat = arv_camera_get_pixel_format(camera, nullptr);
+    
+    pixelFormat = arv_camera_get_pixel_format(camera, nullptr); 
 
     arv_camera_get_width_bounds(camera, &widthMin, &widthMax, nullptr);
     arv_camera_get_height_bounds(camera, &heightMin, &heightMax, nullptr);
