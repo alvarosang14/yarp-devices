@@ -102,9 +102,18 @@ bool AravisGigE::open(yarp::os::Searchable &config)
         }
     
         //-- Nuevo formato
+        GError *error = NULL;
+
         yCInfo(ARV) << "Setting pixel format to: " << requestedPixelFormatString;
-        arv_camera_set_pixel_format_from_string(camera, requestedPixelFormatString.c_str(), nullptr);
-    
+        arv_camera_set_pixel_format_from_string(camera, requestedPixelFormatString.c_str(), &error);
+
+        //arv_camera_set_pixel_format(camera, ARV_PIXEL_FORMAT_BAYER_RG_8, &error);
+
+        if (error)  {
+            yCError(ARV) << "=========================Hola====================";
+
+        }
+
         //-- Verificar si cambia (no cambia)
         pixelFormat = arv_camera_get_pixel_format(camera, nullptr);
         const char *appliedPixelFormatString = arv_camera_get_pixel_format_as_string(camera, nullptr);
