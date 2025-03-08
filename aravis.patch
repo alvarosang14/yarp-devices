@@ -1,0 +1,423 @@
+diff --git a/libraries/YarpPlugins/AravisGigE/CMakeLists.txt b/libraries/YarpPlugins/AravisGigE/CMakeLists.txt
+index 62dd9cc2..edca4374 100644
+--- a/libraries/YarpPlugins/AravisGigE/CMakeLists.txt
++++ b/libraries/YarpPlugins/AravisGigE/CMakeLists.txt
+@@ -2,42 +2,60 @@
+ # Authors: Juan G. Victores & David Estevez
+ # CopyPolicy: Released under the terms of the LGPLv2.1 or later, see LGPL.TXT
+ 
+-if(NOT ARAVIS_FOUND AND (NOT DEFINED ENABLE_AravisGigE OR ENABLE_AravisGigE))
++# Find required packages FIRST
++find_package(YARP REQUIRED)
++find_package(OpenCV REQUIRED)
++find_package(ARAVIS)
++
++if(NOT ARAVIS_FOUND)
+     message(WARNING "ARAVIS package not found, disabling AravisGigE")
++    set(SKIP_AravisGigE ON)
+ endif()
+ 
+-yarp_prepare_plugin(AravisGigE
+-                    CATEGORY device
+-                    TYPE roboticslab::AravisGigE
+-                    INCLUDE AravisGigE.hpp
+-                    DEFAULT ON
+-                    DEPENDS ARAVIS_FOUND
+-                    EXTRA_CONFIG WRAPPER=frameGrabber_nws_yarp)
++# Define source files
++file(GLOB ARAVISGIGE_SOURCES
++    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
++    ${CMAKE_CURRENT_SOURCE_DIR}/src/Log/*.cpp
++    ${CMAKE_CURRENT_SOURCE_DIR}/src/Frame/*.cpp
++)
+ 
++# Conditional logic for building the plugin
+ if(NOT SKIP_AravisGigE)
+ 
+-    link_directories(${ARAVIS_LIBRARY_DIRS})
+-
+-    yarp_add_plugin(AravisGigE AravisGigE.hpp
+-                               DeviceDriverImpl.cpp
+-                               IFrameGrabberControlsImpl.cpp
+-                               IFrameGrabberImageRawImpl.cpp
+-                               LogComponent.hpp
+-                               LogComponent.cpp)
+-
+-    target_link_libraries(AravisGigE YARP::YARP_os
+-                                     YARP::YARP_dev
+-                                     ${ARAVIS_LIBRARIES})
+-
+-    target_include_directories(AravisGigE PRIVATE ${ARAVIS_INCLUDE_DIRS})
++    yarp_prepare_plugin(AravisGigE
++        CATEGORY device
++        TYPE roboticslab::AravisGigE
++        INCLUDE AravisGigE.hpp
++        DEFAULT ON
++        DEPENDS ARAVIS_FOUND
++        EXTRA_CONFIG WRAPPER=frameGrabber_nws_yarp
++    )
++
++    yarp_add_plugin(AravisGigE ${ARAVISGIGE_SOURCES})
++
++    # Target properties
++    target_link_libraries(AravisGigE
++        YARP::YARP_os
++        YARP::YARP_dev
++        ${ARAVIS_LIBRARIES}
++        ${OpenCV_LIBS} # Link OpenCV here
++    )
++
++    target_include_directories(AravisGigE
++        PUBLIC
++            ${CMAKE_CURRENT_SOURCE_DIR}/src
++            ${CMAKE_CURRENT_SOURCE_DIR}/src/Log
++            ${CMAKE_CURRENT_SOURCE_DIR}/src/Frame
++        PRIVATE
++            ${ARAVIS_INCLUDE_DIRS}
++    )
+ 
+     yarp_install(TARGETS AravisGigE
+-                 LIBRARY DESTINATION ${ROBOTICSLAB-YARP-DEVICES_DYNAMIC_PLUGINS_INSTALL_DIR}
+-                 ARCHIVE DESTINATION ${ROBOTICSLAB-YARP-DEVICES_STATIC_PLUGINS_INSTALL_DIR}
+-                 YARP_INI DESTINATION ${ROBOTICSLAB-YARP-DEVICES_PLUGIN_MANIFESTS_INSTALL_DIR})
++        LIBRARY DESTINATION ${ROBOTICSLAB-YARP-DEVICES_DYNAMIC_PLUGINS_INSTALL_DIR}
++        ARCHIVE DESTINATION ${ROBOTICSLAB-YARP-DEVICES_STATIC_PLUGINS_INSTALL_DIR}
++        YARP_INI DESTINATION ${ROBOTICSLAB-YARP-DEVICES_PLUGIN_MANIFESTS_INSTALL_DIR}
++    )
+ 
+ else()
+-
+-    set(ENABLE_AravisGigE OFF CACHE BOOL "Enable/disable AravisGigE device" FORCE)
+-
+-endif()
++    message(STATUS "AravisGigE plugin build skipped.")
++endif()
+\ No newline at end of file
+diff --git a/libraries/YarpPlugins/AravisGigE/AravisGigE.hpp b/libraries/YarpPlugins/AravisGigE/src/AravisGigE.hpp
+similarity index 95%
+rename from libraries/YarpPlugins/AravisGigE/AravisGigE.hpp
+rename to libraries/YarpPlugins/AravisGigE/src/AravisGigE.hpp
+index 04d50399..7e153616 100644
+--- a/libraries/YarpPlugins/AravisGigE/AravisGigE.hpp
++++ b/libraries/YarpPlugins/AravisGigE/src/AravisGigE.hpp
+@@ -24,7 +24,8 @@ namespace roboticslab
+   */
+ class AravisGigE : public yarp::dev::DeviceDriver,
+                    public yarp::dev::IFrameGrabberImageRaw,
+-                   public yarp::dev::IFrameGrabberControls
++                   public yarp::dev::IFrameGrabberControls,
++                   public yarp::dev::IFrameGrabberImage
+ {
+ public:
+ 
+@@ -36,6 +37,7 @@ public:
+ 
+     //  --------- IFrameGrabberImageRaw Declarations. Implementation in IFrameGrabberImageRawImpl.cpp ---------
+     bool getImage(yarp::sig::ImageOf<yarp::sig::PixelMono> & image) override;
++    bool getImage(yarp::sig::ImageOf<yarp::sig::PixelRgb> &image) override;
+     int height() const override;
+     int width() const override;
+ 
+diff --git a/libraries/YarpPlugins/AravisGigE/DeviceDriverImpl.cpp b/libraries/YarpPlugins/AravisGigE/src/DeviceDriverImpl.cpp
+similarity index 68%
+rename from libraries/YarpPlugins/AravisGigE/DeviceDriverImpl.cpp
+rename to libraries/YarpPlugins/AravisGigE/src/DeviceDriverImpl.cpp
+index 116d974f..c594f4e6 100644
+--- a/libraries/YarpPlugins/AravisGigE/DeviceDriverImpl.cpp
++++ b/libraries/YarpPlugins/AravisGigE/src/DeviceDriverImpl.cpp
+@@ -1,14 +1,14 @@
+-#include "AravisGigE.hpp"
+-
+ #include <string>
+ #include <unordered_set>
+-
+ #include <yarp/os/LogStream.h>
+ 
++#include "AravisGigE.hpp"
+ #include "LogComponent.hpp"
+ 
+ using namespace roboticslab;
+ 
++//AravisQtWindow *qtWindow = nullptr;
++
+ bool AravisGigE::open(yarp::os::Searchable &config)
+ {
+     //-- Configuration of Aravis GigE Camera device
+@@ -62,32 +62,95 @@ bool AravisGigE::open(yarp::os::Searchable &config)
+             yCInfo(ARV, "- %s (setting: %s)", availableFormatsNames[i], availableFormatsStrings[i]);
+             availablePixelFormats.emplace(availableFormatsStrings[i]);
+         }
++        
++        // formats in availablePixelFormats
++        yCInfo(ARV) << "Stored pixel formats in availablePixelFormats:";
++        for (const auto& format : availablePixelFormats) {
++            yCInfo(ARV) << format;
++        }
+ 
+         g_free(availableFormatsStrings);
+         g_free(availableFormatsNames);
+     }
+ 
++    // ===================== Pruebas sobre pixel format ======================
+     if (config.check("pixelFormat", "pixel format"))
+-    {
+-        //-- Set pixel format
++    {   
++        if (!config.check("introspection")) {
++            yCError(ARV) << "Flag introspection required!";
++            return false;
++        }
++    
++        //-- Detener adquisición (para probar si se evitan errores)
++        yCInfo(ARV) << "Stopping acquisition before changing pixel format...";
++        arv_camera_stop_acquisition(camera, nullptr);
++    
++        //-- Limpiar de buffers
++        if (stream) {
++            g_object_unref(stream);
++            stream = nullptr;
++        }
++    
+         auto requestedPixelFormatString = config.find("pixelFormat").asString();
+-
++        
++        yCInfo(ARV) << "Requested pixel format: " << requestedPixelFormatString;
++    
+         if (availablePixelFormats.find(requestedPixelFormatString) == availablePixelFormats.end())
+         {
+-            yCError(ARV) << "Requested pixel format" << requestedPixelFormatString << "is not available";
++            yCError(ARV) << "Requested pixel format " << requestedPixelFormatString << " is not available";
+             return false;
+         }
+-
+-        yCInfo(ARV) << "Setting pixel format to" << requestedPixelFormatString;
+-
++    
++        //-- Nuevo formato
++        yCInfo(ARV) << "Setting pixel format to: " << requestedPixelFormatString;
+         arv_camera_set_pixel_format_from_string(camera, requestedPixelFormatString.c_str(), nullptr);
++    
++        //-- Verificar si cambia (no cambia)
++        pixelFormat = arv_camera_get_pixel_format(camera, nullptr);
++        const char *appliedPixelFormatString = arv_camera_get_pixel_format_as_string(camera, nullptr);
++    
++        if (appliedPixelFormatString == nullptr || requestedPixelFormatString != appliedPixelFormatString) {
++            yCError(ARV) << "Pixel format change failed! Expected: " << requestedPixelFormatString
++                         << ", but got: " << (appliedPixelFormatString ? appliedPixelFormatString : "NULL");
++            return false;
++        }
++    
++        //-- Pequeña espera para ver si ayuda
++        yarp::os::Time::delay(0.1);
++    
++        //-- Crear un nuevo stream 
++        yCInfo(ARV) << "Creating new stream for the updated pixel format...";
++        stream = arv_camera_create_stream(camera, nullptr, nullptr, nullptr);
++    
++        if (stream == nullptr)
++        {
++            yCError(ARV) << "Could not create Aravis stream";
++            return false;
++        }
++    
++        //-- Reconfigurar
++        g_object_set(stream, "socket-buffer", ARV_GV_STREAM_SOCKET_BUFFER_AUTO, "socket-buffer-size", 0, nullptr);
++        g_object_set(stream, "packet-resend", ARV_GV_STREAM_PACKET_RESEND_NEVER, nullptr);
++        g_object_set(stream, "packet-timeout", (unsigned) 40000, "frame-retention", (unsigned) 200000, nullptr);
++    
++        guint payload = arv_camera_get_payload(camera, nullptr);
++    
++        //-- Añadir nuevos buffer
++        yCInfo(ARV) << "Adding buffers for the new pixel format...";
++        for (int i = 0; i < 10; i++) {
++            arv_stream_push_buffer(stream, arv_buffer_new(payload, nullptr));
++        }
++    
++        //-- Iniciar adquisición tras todo el cambio
++        yCInfo(ARV) << "Restarting acquisition...";
++        arv_camera_start_acquisition(camera, nullptr);
+     }
+     else
+     {
+-        yCInfo(ARV) << "Using pixel format:" << arv_camera_get_pixel_format_as_string(camera, nullptr);
++        yCInfo(ARV) << "Using pixel format: " << arv_camera_get_pixel_format_as_string(camera, nullptr);
+     }
+-
+-    pixelFormat = arv_camera_get_pixel_format(camera, nullptr);
++    
++    pixelFormat = arv_camera_get_pixel_format(camera, nullptr); 
+ 
+     arv_camera_get_width_bounds(camera, &widthMin, &widthMax, nullptr);
+     arv_camera_get_height_bounds(camera, &heightMin, &heightMax, nullptr);
+@@ -198,6 +261,12 @@ bool AravisGigE::open(yarp::os::Searchable &config)
+     arv_device_set_string_feature_value(arv_camera_get_device(camera), "TriggerMode" , "Off", nullptr);
+     arv_camera_start_acquisition(camera, nullptr);
+ 
++    /*
++    if (!qtWindow) {
++        qtWindow = new AravisQtWindow();
++        qtWindow->start();  // Inicia el hilo de la ventana Qt
++    }*/
++
+     yCInfo(ARV) << "Aravis Camera acquisition started!";
+     return true;
+ }
+diff --git a/libraries/YarpPlugins/AravisGigE/IFrameGrabberControlsImpl.cpp b/libraries/YarpPlugins/AravisGigE/src/Frame/IFrameGrabberControlsImpl.cpp
+similarity index 100%
+rename from libraries/YarpPlugins/AravisGigE/IFrameGrabberControlsImpl.cpp
+rename to libraries/YarpPlugins/AravisGigE/src/Frame/IFrameGrabberControlsImpl.cpp
+diff --git a/libraries/YarpPlugins/AravisGigE/src/Frame/IFrameGrabberImageImpl.cpp b/libraries/YarpPlugins/AravisGigE/src/Frame/IFrameGrabberImageImpl.cpp
+new file mode 100644
+index 00000000..fefb7deb
+--- /dev/null
++++ b/libraries/YarpPlugins/AravisGigE/src/Frame/IFrameGrabberImageImpl.cpp
+@@ -0,0 +1,125 @@
++#include "AravisGigE.hpp"
++#include <yarp/os/LogStream.h>
++#include <opencv2/imgproc.hpp>
++#include <yarp/cv/Cv.h>
++#include "LogComponent.hpp"
++
++using namespace roboticslab;
++
++bool AravisGigE::getImage(yarp::sig::ImageOf<yarp::sig::PixelRgb> &image) {
++    framebuffer = nullptr;
++    GError *error = nullptr;
++
++    if (stream == nullptr) {
++        yCError(ARV) << "Stream was not initialized";
++        return false;
++    }
++
++    yCInfo(ARV) << "Starting acquisition...";
++    arv_camera_start_acquisition(camera, &error);
++
++    if (error) {
++        yCError(ARV) << "Error starting acquisition: " << error->message;
++        g_error_free(error);
++        return false;
++    }
++
++    ArvPixelFormat currentPixelFormat = arv_camera_get_pixel_format(camera, &error);
++    if (error) {
++        yCError(ARV) << "Error getting pixel format: " << error->message;
++        g_error_free(error);
++        return false;
++    }
++
++    yCInfo(ARV) << "Current pixel format: " << currentPixelFormat;
++
++    if (currentPixelFormat != pixelFormat) {
++        yCWarning(ARV) << "Pixel format mismatch! Setting to requested format...";
++        arv_camera_set_pixel_format(camera, pixelFormat, &error);
++
++        if (error) {
++            yCError(ARV) << "Error setting pixel format: " << error->message;
++            g_error_free(error);
++            return false;
++        }
++    }
++
++    gint n_buffers_assigned, n_buffers_pushed;
++    arv_stream_get_n_buffers(stream, &n_buffers_assigned, &n_buffers_pushed);
++
++    yCInfo(ARV) << "Buffers in stream - Assigned: " << n_buffers_assigned << ", Pushed: " << n_buffers_pushed;
++
++    if (n_buffers_pushed == 0) {
++        yCWarning(ARV) << "No buffers in stream, adding buffer...";
++        // ================ Esto nunca funciona ===================
++        arv_stream_push_buffer(stream, arv_buffer_new_allocate(_width * _height * 3));
++    }
++
++    arv_stream_get_n_buffers(stream, &n_buffers_assigned, &n_buffers_pushed);
++    if (n_buffers_pushed == 0) {
++        yCError(ARV) << "No buffers were added to the stream!";
++    } else {
++        yCInfo(ARV) << "Buffers successfully added to the stream.";
++    }
++    
++    ArvBuffer *arvBuffer = nullptr;
++    int max_tries = 10;
++    int tries = 0;
++    bool success = false;
++
++    while (!success && tries < max_tries) {
++        yCInfo(ARV) << "Attempting to retrieve frame (attempt " << tries + 1 << " of " << max_tries << ")...";
++        // ====================== Tocar tiempo por si acaso ==========================
++        arvBuffer = arv_stream_timeout_pop_buffer(stream, 500);
++
++        if (arvBuffer != nullptr) {
++            ArvBufferStatus status = arv_buffer_get_status(arvBuffer);
++            if (status == ARV_BUFFER_STATUS_SUCCESS) {
++                success = true;
++            } else {
++                yCError(ARV) << "Buffer has an error! Status: " << status;
++                arv_stream_push_buffer(stream, arvBuffer);
++            }
++        }
++        tries++;
++    }
++
++    if (arvBuffer == nullptr || !success) {
++        yCError(ARV) << "Timeout! Could not grab frame...";
++        return false;
++    }
++
++    size_t buffer_size;
++    framebuffer = (void *)arv_buffer_get_data(arvBuffer, &buffer_size);
++    arv_buffer_get_image_region(arvBuffer, &xoffset, &yoffset, &_width, &_height);
++    frameID = arv_buffer_get_frame_id(arvBuffer);
++
++    if (framebuffer == nullptr) {
++        yCError(ARV) << "Framebuffer is empty";
++        return false;
++    }
++
++    arv_stream_push_buffer(stream, arvBuffer);
++
++    // P=============== Procesamiento de imagen =============================
++    image.zero();
++    image.resize(_width, _height);
++    auto *rgbData = reinterpret_cast<yarp::sig::PixelRgb *>(image.getRawImage());
++
++    if (pixelFormat == ARV_PIXEL_FORMAT_BAYER_RG_8) {
++        yCInfo(ARV) << "Processing Bayer RG8 image...";
++        cv::Mat bayerImg(_height, _width, CV_8UC1, (void *)framebuffer);
++        cv::Mat rgbImg;
++        cv::cvtColor(bayerImg, rgbImg, cv::COLOR_BayerRG2BGR);
++
++        std::memcpy(image.getRawImage(), rgbImg.data, _width * _height * 3);
++    } else if (pixelFormat == ARV_PIXEL_FORMAT_RGB_8_PACKED) {
++        yCInfo(ARV) << "Processing RGB8 image...";
++        std::memcpy(rgbData, framebuffer, _width * _height * 3);
++    } else {
++        yCError(ARV) << "Unsupported pixel format";
++        return false;
++    }
++
++    return true;
++}
+diff --git a/libraries/YarpPlugins/AravisGigE/IFrameGrabberImageRawImpl.cpp b/libraries/YarpPlugins/AravisGigE/src/Frame/IFrameGrabberImageRawImpl.cpp
+similarity index 95%
+rename from libraries/YarpPlugins/AravisGigE/IFrameGrabberImageRawImpl.cpp
+rename to libraries/YarpPlugins/AravisGigE/src/Frame/IFrameGrabberImageRawImpl.cpp
+index 66051c07..ba24ca6c 100644
+--- a/libraries/YarpPlugins/AravisGigE/IFrameGrabberImageRawImpl.cpp
++++ b/libraries/YarpPlugins/AravisGigE/src/Frame/IFrameGrabberImageRawImpl.cpp
+@@ -56,7 +56,7 @@ bool AravisGigE::getImage(yarp::sig::ImageOf<yarp::sig::PixelMono> &image)
+     {
+         //-- Create a yarp image container according with the current pixel format
+         yarp::sig::Image raw_image;
+-        if (pixelFormat != ARV_PIXEL_FORMAT_MONO_8)
++        if (pixelFormat != ARV_PIXEL_FORMAT_MONO_8 && pixelFormat != ARV_PIXEL_FORMAT_BAYER_RG_8)
+         {
+             yCError(ARV) << "Unsupported pixel format";
+         }
+diff --git a/libraries/YarpPlugins/AravisGigE/LogComponent.cpp b/libraries/YarpPlugins/AravisGigE/src/Log/LogComponent.cpp
+similarity index 100%
+rename from libraries/YarpPlugins/AravisGigE/LogComponent.cpp
+rename to libraries/YarpPlugins/AravisGigE/src/Log/LogComponent.cpp
+diff --git a/libraries/YarpPlugins/AravisGigE/LogComponent.hpp b/libraries/YarpPlugins/AravisGigE/src/Log/LogComponent.hpp
+similarity index 100%
+rename from libraries/YarpPlugins/AravisGigE/LogComponent.hpp
+rename to libraries/YarpPlugins/AravisGigE/src/Log/LogComponent.hpp
