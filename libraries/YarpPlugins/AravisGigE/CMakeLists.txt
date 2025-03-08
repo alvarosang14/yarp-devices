@@ -26,7 +26,8 @@ if(NOT SKIP_AravisGigE)
                                IFrameGrabberImageRawImpl.cpp
                                IFrameGrabberImageImpl.cpp
                                LogComponent.hpp
-                               LogComponent.cpp)
+                               LogComponent.cpp
+                               TerminalComponent.cpp)
 
     target_link_libraries(AravisGigE YARP::YARP_os
                                      YARP::YARP_dev

@@ -41,6 +41,9 @@ public:
     int height() const override;
     int width() const override;
 
+    // ---------- Terminal ----------------------
+    void runInteractiveTerminal();
+
     // ---------- IFrameGrabberControls Declarations. Implementation in IFrameGrabberControlsImpl.cpp ---------
     bool getCameraDescription(CameraDescriptor * camera) override;
     bool hasFeature(int feature, bool * hasFeature) override;
