@@ -1,7 +1,7 @@
-#include "AravisGigE.hpp"
-
+#include <iostream>
 #include <yarp/os/LogStream.h>
 
+#include "AravisGigE.hpp"
 #include "LogComponent.hpp"
 
 using namespace roboticslab;
@@ -268,4 +268,66 @@ bool AravisGigE::setOnePush(int feature)
     //-- Check if device supports this feature
     //-- (No feature supports one push mode currently. If any did, the code to discover that would go here)
     return true;
+}
+
+/*
+bool AravisGigE::getAvailableFeatures()
+{
+    guint n_features;
+    char **features = arv_device_get_available_features(arv_camera_get_device(camera), &n_features);
+
+    if (!features)
+    {
+        yCError(ARV) << "Could not retrieve available features!";
+        return false;
+    }
+
+    yCInfo(ARV) << "Available camera features:";
+    for (guint i = 0; i < n_features; i++)
+    {
+        yCInfo(ARV) << "- " << features[i];
+    }
+
+    g_strfreev(features); // Libera memoria de Glib
+    return true;
+}*/
+void AravisGigE::listAvailableFeatures()
+{
+    std::cout << "Listing available features:\n";
+
+    // Mapeo de IDs a nombres legibles
+    std::map<int, std::string> feature_names = {
+        {YARP_FEATURE_BRIGHTNESS, "Brightness"},
+        {YARP_FEATURE_EXPOSURE, "Exposure"},
+        {YARP_FEATURE_SHARPNESS, "Sharpness"},
+        {YARP_FEATURE_WHITE_BALANCE, "White Balance"},
+        {YARP_FEATURE_HUE, "Hue"},
+        {YARP_FEATURE_SATURATION, "Saturation"},
+        {YARP_FEATURE_GAMMA, "Gamma"},
+        {YARP_FEATURE_SHUTTER, "Shutter"},
+        {YARP_FEATURE_GAIN, "Gain"},
+        {YARP_FEATURE_IRIS, "Iris"},
+        {YARP_FEATURE_FOCUS, "Focus"},
+        {YARP_FEATURE_TEMPERATURE, "Temperature"},
+        {YARP_FEATURE_TRIGGER, "Trigger"},
+        {YARP_FEATURE_TRIGGER_DELAY, "Trigger Delay"},
+        {YARP_FEATURE_WHITE_SHADING, "White Shading"},
+        {YARP_FEATURE_FRAME_RATE, "Frame Rate"},
+        {YARP_FEATURE_ZOOM, "Zoom"},
+        {YARP_FEATURE_PAN, "Pan"},
+        {YARP_FEATURE_TILT, "Tilt"},
+        {YARP_FEATURE_OPTICAL_FILTER, "Optical Filter"},
+        {YARP_FEATURE_CAPTURE_SIZE, "Capture Size"},
+        {YARP_FEATURE_CAPTURE_QUALITY, "Capture Quality"},
+        {YARP_FEATURE_MIRROR, "Mirror"}
+    };
+
+    for (const auto &feature : feature_names)
+    {
+        bool available = false;
+        if (hasFeature(feature.first, &available) && available)
+        {
+            std::cout << "- " << feature.second << " (ID " << feature.first << ") is available.\n";
+        }
+    }
 }

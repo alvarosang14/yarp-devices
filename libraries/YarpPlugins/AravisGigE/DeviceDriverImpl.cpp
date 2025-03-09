@@ -1,6 +1,7 @@
 #include <string>
 #include <unordered_set>
 #include <yarp/os/LogStream.h>
+#include <thread>
 
 #include "AravisGigE.hpp"
 #include "LogComponent.hpp"
@@ -159,7 +160,10 @@ bool AravisGigE::open(yarp::os::Searchable &config)
     // Controls (See the next line)
     if (config.check("terminal", "enable interactive terminal")) {
         yCInfo(ARV) << "Entering interactive mode...";
-        runInteractiveTerminal();
+        //runInteractiveTerminal();
+        std::thread t(&roboticslab::AravisGigE::runInteractiveTerminal, this);
+        t.detach();
+;
     }
 
     //-- Lens controls availability
@@ -218,12 +222,6 @@ bool AravisGigE::open(yarp::os::Searchable &config)
     arv_camera_set_acquisition_mode(camera, ARV_ACQUISITION_MODE_CONTINUOUS, nullptr);
     arv_device_set_string_feature_value(arv_camera_get_device(camera), "TriggerMode" , "Off", nullptr);
     arv_camera_start_acquisition(camera, nullptr);
-
-    /*
-    if (!qtWindow) {
-        qtWindow = new AravisQtWindow();
-        qtWindow->start();  // Inicia el hilo de la ventana Qt
-    }*/
 
     yCInfo(ARV) << "Aravis Camera acquisition started!";
     return true;

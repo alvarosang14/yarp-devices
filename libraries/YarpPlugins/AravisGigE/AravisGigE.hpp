@@ -61,6 +61,8 @@ public:
     bool getMode(int feature, FeatureMode * mode) override;
     bool setOnePush(int feature) override;
 
+    void listAvailableFeatures();
+
 private:
     ArvCamera       * camera {nullptr};      // camera to control
     ArvStream       * stream {nullptr};      // object for video stream reception
