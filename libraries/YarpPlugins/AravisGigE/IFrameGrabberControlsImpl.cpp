@@ -270,32 +270,11 @@ bool AravisGigE::setOnePush(int feature)
     return true;
 }
 
-/*
-bool AravisGigE::getAvailableFeatures()
-{
-    guint n_features;
-    char **features = arv_device_get_available_features(arv_camera_get_device(camera), &n_features);
-
-    if (!features)
-    {
-        yCError(ARV) << "Could not retrieve available features!";
-        return false;
-    }
-
-    yCInfo(ARV) << "Available camera features:";
-    for (guint i = 0; i < n_features; i++)
-    {
-        yCInfo(ARV) << "- " << features[i];
-    }
-
-    g_strfreev(features); // Libera memoria de Glib
-    return true;
-}*/
 void AravisGigE::listAvailableFeatures()
 {
     std::cout << "Listing available features:\n";
 
-    // Mapeo de IDs a nombres legibles
+    // Map of IDs
     std::map<int, std::string> feature_names = {
         {YARP_FEATURE_BRIGHTNESS, "Brightness"},
         {YARP_FEATURE_EXPOSURE, "Exposure"},

@@ -2,6 +2,7 @@
 #include <unordered_set>
 #include <yarp/os/LogStream.h>
 #include <thread>
+#include <yarp/os/Log.h>
 
 #include "AravisGigE.hpp"
 #include "LogComponent.hpp"
@@ -12,6 +13,7 @@ using namespace roboticslab;
 
 bool AravisGigE::open(yarp::os::Searchable &config)
 {
+
     //-- Configuration of Aravis GigE Camera device
     if (config.check("fake", "enable fake Aravis camera"))
     {
@@ -160,7 +162,8 @@ bool AravisGigE::open(yarp::os::Searchable &config)
     // Controls (See the next line)
     if (config.check("terminal", "enable interactive terminal")) {
         yCInfo(ARV) << "Entering interactive mode...";
-        //runInteractiveTerminal();
+        useLogFile = true;
+        yarp::os::Log::setPrintCallback(customLogCallback);        
         std::thread t(&roboticslab::AravisGigE::runInteractiveTerminal, this);
         t.detach();
 ;

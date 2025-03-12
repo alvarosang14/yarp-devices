@@ -45,21 +45,21 @@ public:
     void runInteractiveTerminal();
 
     // ---------- IFrameGrabberControls Declarations. Implementation in IFrameGrabberControlsImpl.cpp ---------
-    bool getCameraDescription(CameraDescriptor * camera) override;
-    bool hasFeature(int feature, bool * hasFeature) override;
-    bool setFeature(int feature, double value) override;
-    bool getFeature(int feature, double * value) override;
+    bool getCameraDescription(CameraDescriptor * camera) override; // descripcion de la camara.
+    bool hasFeature(int feature, bool * hasFeature) override; // Tiene característica??
+    bool setFeature(int feature, double value) override; // Establece valor
+    bool getFeature(int feature, double * value) override; //Obtiene valor
     bool setFeature(int feature, double value1, double value2) override;
     bool getFeature(int feature, double * value1, double * value2) override;
-    bool hasOnOff(int feature, bool * hasOnOff) override;
-    bool setActive(int feature, bool onoff) override;
-    bool getActive(int feature, bool * isActive) override;
-    bool hasAuto(int feature, bool * hasAuto) override;
-    bool hasManual(int feature, bool * hasManual) override;
-    bool hasOnePush(int feature, bool * hasOnePush) override;
-    bool setMode(int feature, FeatureMode mode) override;
-    bool getMode(int feature, FeatureMode * mode) override;
-    bool setOnePush(int feature) override;
+    bool hasOnOff(int feature, bool * hasOnOff) override; // Se puede activar o desactiavr??
+    bool setActive(int feature, bool onoff) override; // Activamos
+    bool getActive(int feature, bool * isActive) override; // Vemos si activada??
+    bool hasAuto(int feature, bool * hasAuto) override; // Tiene auto ??
+    bool hasManual(int feature, bool * hasManual) override; // Tiene manual ??
+    bool hasOnePush(int feature, bool * hasOnePush) override; // admite ajuste automatico al presionar un boton ??
+    bool setMode(int feature, FeatureMode mode) override; // ponemos automatico o manual
+    bool getMode(int feature, FeatureMode * mode) override; // esta en automatico o manual
+    bool setOnePush(int feature) override; // activamos este modod
 
     void listAvailableFeatures();
 
