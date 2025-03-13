@@ -316,6 +316,14 @@ void AravisGigE::listAvailableFeatures()
 
             std::cout << "- " << feature.second << " (ID " << feature.first << ") is available. Mode: " << mode << ". Isactive: " 
             << isActive << ". Has OnOff: " << onOff << "\n";
+
+            ArvDevice *device = arv_camera_get_device(camera);
+
+            gint64 min_val = 0, max_val = 0;
+            arv_device_get_integer_feature_bounds(device, feature.second.c_str(), &min_val, &max_val, nullptr);
+
+            std::cout << "  → Rango de " << feature.second << ": " << min_val << " - " << max_val << std::endl;
+
         }
     }
 }
