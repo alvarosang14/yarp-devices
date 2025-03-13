@@ -228,9 +228,9 @@ bool AravisGigE::setMode(int feature, FeatureMode mode)
 {
     yCDebug(ARV) << "Requested to set auto/manual mode for feature" << feature;
 
-    if (bool b; !hasFeature(feature, &b) || !b || (!hasAuto(feature, &b) || !b) && (!hasManual(feature, &b) || !b))
+    if (bool b; !hasFeature(feature, &b) || !b || (!hasAuto(feature, &b) || !b) && (!hasManual(feature, &b) || !b) && (!hasOnePush(feature, &b) || !b))
     {
-        yCError(ARV) << "Feature is not available or does not support auto/manual mode";
+        yCError(ARV) << "Feature is not available or does not support auto/manual/OnePush mode";
         return false;
     }
 
@@ -304,9 +304,18 @@ void AravisGigE::listAvailableFeatures()
     for (const auto &feature : feature_names)
     {
         bool available = false;
-        if (hasFeature(feature.first, &available) && available)
-        {
-            std::cout << "- " << feature.second << " (ID " << feature.first << ") is available.\n";
+        if (hasFeature(feature.first, &available) && available) {
+            FeatureMode mode;
+            getMode(feature.first, &mode);
+            
+            bool isActive;
+            getActive(feature.first, &isActive);
+
+            bool onOff;
+            hasOnOff(feature.first, &onOff);
+
+            std::cout << "- " << feature.second << " (ID " << feature.first << ") is available. Mode: " << mode << ". Isactive: " 
+            << isActive << ". Has OnOff: " << onOff << "\n";
         }
     }
 }

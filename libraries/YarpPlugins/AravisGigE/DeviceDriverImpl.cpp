@@ -159,16 +159,6 @@ bool AravisGigE::open(yarp::os::Searchable &config)
         yCWarning(ARV) << "Gain property not available";
     }
 
-    // Controls (See the next line)
-    if (config.check("terminal", "enable interactive terminal")) {
-        yCInfo(ARV) << "Entering interactive mode...";
-        useLogFile = true;
-        yarp::os::Log::setPrintCallback(customLogCallback);        
-        std::thread t(&roboticslab::AravisGigE::runInteractiveTerminal, this);
-        t.detach();
-;
-    }
-
     //-- Lens controls availability
     yCInfo(ARV) << "Checking Lens Controls availability";
 
@@ -227,6 +217,16 @@ bool AravisGigE::open(yarp::os::Searchable &config)
     arv_camera_start_acquisition(camera, nullptr);
 
     yCInfo(ARV) << "Aravis Camera acquisition started!";
+
+    // Controls (See the next line)
+    if (config.check("terminal", "enable interactive terminal")) {
+        yCInfo(ARV) << "Entering interactive mode...";
+        useLogFile = true;
+        yarp::os::Log::setPrintCallback(customLogCallback);        
+        std::thread t(&roboticslab::AravisGigE::runInteractiveTerminal, this);
+        t.detach();
+    }
+    
     return true;
 }
 
