@@ -228,9 +228,9 @@ bool AravisGigE::setMode(int feature, FeatureMode mode)
 {
     yCDebug(ARV) << "Requested to set auto/manual mode for feature" << feature;
 
-    if (bool b; !hasFeature(feature, &b) || !b || (!hasAuto(feature, &b) || !b) && (!hasManual(feature, &b) || !b) && (!hasOnePush(feature, &b) || !b))
+    if (bool b; !hasFeature(feature, &b) || !b || (!hasAuto(feature, &b) || !b) && (!hasManual(feature, &b) || !b))
     {
-        yCError(ARV) << "Feature is not available or does not support auto/manual/OnePush mode";
+        yCError(ARV) << "Feature is not available or does not support auto/manual mode";
         return false;
     }
 
@@ -301,29 +301,43 @@ void AravisGigE::listAvailableFeatures()
         {YARP_FEATURE_MIRROR, "Mirror"}
     };
 
+    ArvDevice *device = arv_camera_get_device(camera);
+
     for (const auto &feature : feature_names)
     {
         bool available = false;
         if (hasFeature(feature.first, &available) && available) {
-            FeatureMode mode;
+            FeatureMode mode = MODE_UNKNOWN;
             getMode(feature.first, &mode);
             
-            bool isActive;
+            bool isActive = false;
             getActive(feature.first, &isActive);
 
-            bool onOff;
+            bool onOff = false;
             hasOnOff(feature.first, &onOff);
 
-            std::cout << "- " << feature.second << " (ID " << feature.first << ") is available. Mode: " << mode << ". Isactive: " 
+            std::cout << "- " << feature.second << " (ID " << feature.first << ") is available. Mode: " << std::to_string(mode) << ". Isactive: " 
             << isActive << ". Has OnOff: " << onOff << "\n";
 
-            ArvDevice *device = arv_camera_get_device(camera);
+            if (!arv_device_get_feature(device, feature.second.c_str())) {
+                std::cout << "  -- " << feature.second << " No soported range values." << std::endl;
+                continue;
+            }
 
-            gint64 min_val = 0, max_val = 0;
-            arv_device_get_integer_feature_bounds(device, feature.second.c_str(), &min_val, &max_val, nullptr);
+            gint64 min_int = 0, max_int = 0;
+            arv_device_get_integer_feature_bounds(device, feature.second.c_str(), &min_int, &max_int, nullptr);
 
-            std::cout << "  → Rango de " << feature.second << ": " << min_val << " - " << max_val << std::endl;
+            if (min_int > std::numeric_limits<gint64>::min() && max_int < std::numeric_limits<gint64>::max()) {
+                std::cout << "  -- Range (INT) from " << feature.second << ": " << min_int << " - " << max_int << std::endl;
+                continue;  
+            }
 
+            gdouble min_float = 0, max_float = 0;
+            arv_device_get_float_feature_bounds(device, feature.second.c_str(), &min_float, &max_float, nullptr);
+
+            if (min_float > -std::numeric_limits<gdouble>::max() && max_float < std::numeric_limits<gdouble>::max()) {
+                std::cout << "  -- Range (FLOAT) from " << feature.second << ": " << min_float << " - " << max_float << std::endl;
+            }
         }
     }
 }

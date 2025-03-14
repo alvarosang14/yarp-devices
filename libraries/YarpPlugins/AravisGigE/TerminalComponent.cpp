@@ -16,6 +16,7 @@ void AravisGigE::runInteractiveTerminal() {
         if (command == "exit")
         {
             std::cout << "Exiting interactive mode...\n";
+            AravisGigE::close();
             break;
         }
         else if (command == "list_features")
@@ -44,3 +45,17 @@ void AravisGigE::runInteractiveTerminal() {
         }
     }
 }
+
+/*
+[ERROR] Feature is not available or does not support auto/manual/OnePush mode (/home/alvaro/repos/yarp-devices/libraries/YarpPlugins/AravisGigE/IFrameGrabberControlsImpl.cpp:248, virtual bool roboticslab::AravisGigE::getMode(int, FeatureMode*))
+[ERROR] Feature is not available or does not support on/off mode (/home/alvaro/repos/yarp-devices/libraries/YarpPlugins/AravisGigE/IFrameGrabberControlsImpl.cpp:160, virtual bool roboticslab::AravisGigE::getActive(int, bool*))
+[ERROR] Feature is not available or does not support auto/manual/OnePush mode (/home/alvaro/repos/yarp-devices/libraries/YarpPlugins/AravisGigE/IFrameGrabberControlsImpl.cpp:248, virtual bool roboticslab::AravisGigE::getMode(int, FeatureMode*))
+[ERROR] Feature is not available or does not support on/off mode (/home/alvaro/repos/yarp-devices/libraries/YarpPlugins/AravisGigE/IFrameGrabberControlsImpl.cpp:160, virtual bool roboticslab::AravisGigE::getActive(int, bool*))
+[ERROR] Feature is not available or does not support auto/manual/OnePush mode (/home/alvaro/repos/yarp-devices/libraries/YarpPlugins/AravisGigE/IFrameGrabberControlsImpl.cpp:248, virtual bool roboticslab::AravisGigE::getMode(int, FeatureMode*))
+[ERROR] Feature is not available or does not support on/off mode (/home/alvaro/repos/yarp-devices/libraries/YarpPlugins/AravisGigE/IFrameGrabberControlsImpl.cpp:160, virtual bool roboticslab::AravisGigE::getActive(int, bool*))
+[ERROR] Feature is not available or does not support auto/manual/OnePush mode (/home/alvaro/repos/yarp-devices/libraries/YarpPlugins/AravisGigE/IFrameGrabberControlsImpl.cpp:248, virtual bool roboticslab::AravisGigE::getMode(int, FeatureMode*))
+[ERROR] Feature is not available or does not support on/off mode (/home/alvaro/repos/yarp-devices/libraries/YarpPlugins/AravisGigE/IFrameGrabberControlsImpl.cpp:160, virtual bool roboticslab::AravisGigE::getActive(int, bool*))
+[ERROR] Feature is not available or does not support auto/manual/OnePush mode (/home/alvaro/repos/yarp-devices/libraries/YarpPlugins/AravisGigE/IFrameGrabberControlsImpl.cpp:248, virtual bool roboticslab::AravisGigE::getMode(int, FeatureMode*))
+[ERROR] Feature is not available or does not support on/off mode (/home/alvaro/repos/yarp-devices/libraries/YarpPlugins/AravisGigE/IFrameGrabberControlsImpl.cpp:160, virtual bool roboticslab::AravisGigE::getActive(int, bool*))
+
+*/
