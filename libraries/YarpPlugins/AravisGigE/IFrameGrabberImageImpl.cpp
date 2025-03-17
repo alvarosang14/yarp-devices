@@ -57,7 +57,7 @@ bool AravisGigE::getImage(yarp::sig::ImageOf<yarp::sig::PixelRgb> &image)
         pixelFormat == ARV_PIXEL_FORMAT_BAYER_RG_12P ||
         pixelFormat == ARV_PIXEL_FORMAT_BAYER_RG_16)
     {
-        yCInfo(ARV) << "Processing Bayer image...";
+        //yCInfo(ARV) << "Processing Bayer image...";
         cv::Mat bayerImg(_height, _width, CV_8UC1, framebuffer);
         cv::Mat rgbImg;
         cv::cvtColor(bayerImg, rgbImg, cv::COLOR_BayerRG2BGR);

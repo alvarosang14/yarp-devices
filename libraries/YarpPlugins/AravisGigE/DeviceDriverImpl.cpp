@@ -1,7 +1,6 @@
 #include <string>
 #include <unordered_set>
 #include <yarp/os/LogStream.h>
-#include <thread>
 #include <yarp/os/Log.h>
 
 #include "AravisGigE.hpp"

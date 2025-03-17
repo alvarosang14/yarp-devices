@@ -2,11 +2,11 @@
 #define __ARAVIS_GIGE_HPP__
 
 #include <map>
+#include <thread>
 
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/IFrameGrabberControls.h>
 #include <yarp/dev/IFrameGrabberImage.h>
-
 #include <arv.h>
 
 namespace roboticslab
@@ -62,6 +62,7 @@ public:
     bool setOnePush(int feature) override; // activamos este modod
 
     void listAvailableFeatures();
+    cameraFeature_id_t id_find(const std::string &feature_name);
 
 private:
     ArvCamera       * camera {nullptr};      // camera to control
@@ -103,13 +104,58 @@ private:
     unsigned        prevFrameID {0};
 
     std::map<cameraFeature_id_t, const char *> yarp_arv_int_feature_map {
-        {YARP_FEATURE_ZOOM, "Zoom"},
+        {YARP_FEATURE_BRIGHTNESS, "Brightness"},
+        {YARP_FEATURE_SHUTTER, "Shutter"},
+        {YARP_FEATURE_IRIS, "Iris"},
         {YARP_FEATURE_FOCUS, "Focus"},
+        {YARP_FEATURE_TEMPERATURE, "Temperature"},
+        {YARP_FEATURE_TRIGGER, "Trigger"},
+        {YARP_FEATURE_TRIGGER_DELAY, "TriggerDelay"},
+        {YARP_FEATURE_WHITE_SHADING, "WhiteShading"},
+        {YARP_FEATURE_ZOOM, "Zoom"},
+        {YARP_FEATURE_PAN, "Pan"},
+        {YARP_FEATURE_TILT, "Tilt"},
+        {YARP_FEATURE_OPTICAL_FILTER, "OpticalFilter"},
+        {YARP_FEATURE_CAPTURE_SIZE, "CaptureSize"},
+        {YARP_FEATURE_CAPTURE_QUALITY, "CaptureQuality"},
+        {YARP_FEATURE_MIRROR, "Mirror"}
     };
-
+    
     std::map<cameraFeature_id_t, const char *> yarp_arv_float_feat_map {
         {YARP_FEATURE_EXPOSURE, "ExposureTime"},
         {YARP_FEATURE_GAIN, "Gain"},
+        {YARP_FEATURE_FRAME_RATE, "FPS"},
+        {YARP_FEATURE_SHARPNESS, "Sharpness"},
+        {YARP_FEATURE_WHITE_BALANCE, "WhiteBalance"},
+        {YARP_FEATURE_HUE, "Hue"},
+        {YARP_FEATURE_SATURATION, "Saturation"},
+        {YARP_FEATURE_GAMMA, "Gamma"}
+    };
+
+    std::map<cameraFeature_id_t, const char *> feature_names = {
+        {YARP_FEATURE_BRIGHTNESS, "Brightness"},
+        {YARP_FEATURE_EXPOSURE, "Exposure"},
+        {YARP_FEATURE_SHARPNESS, "Sharpness"},
+        {YARP_FEATURE_WHITE_BALANCE, "White Balance"},
+        {YARP_FEATURE_HUE, "Hue"},
+        {YARP_FEATURE_SATURATION, "Saturation"},
+        {YARP_FEATURE_GAMMA, "Gamma"},
+        {YARP_FEATURE_SHUTTER, "Shutter"},
+        {YARP_FEATURE_GAIN, "Gain"},
+        {YARP_FEATURE_IRIS, "Iris"},
+        {YARP_FEATURE_FOCUS, "Focus"},
+        {YARP_FEATURE_TEMPERATURE, "Temperature"},
+        {YARP_FEATURE_TRIGGER, "Trigger"},
+        {YARP_FEATURE_TRIGGER_DELAY, "Trigger Delay"},
+        {YARP_FEATURE_WHITE_SHADING, "White Shading"},
+        {YARP_FEATURE_FRAME_RATE, "Frame Rate"},
+        {YARP_FEATURE_ZOOM, "Zoom"},
+        {YARP_FEATURE_PAN, "Pan"},
+        {YARP_FEATURE_TILT, "Tilt"},
+        {YARP_FEATURE_OPTICAL_FILTER, "Optical Filter"},
+        {YARP_FEATURE_CAPTURE_SIZE, "Capture Size"},
+        {YARP_FEATURE_CAPTURE_QUALITY, "Capture Quality"},
+        {YARP_FEATURE_MIRROR, "Mirror"},
         {YARP_FEATURE_FRAME_RATE, "FPS"}
     };
 };

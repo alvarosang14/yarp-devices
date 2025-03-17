@@ -18,8 +18,4 @@ void customLogCallback(yarp::os::Log::LogType type, const char* msg, const char*
     }
 }
 
-YARP_LOG_COMPONENT(ARV, "rl.AravisGigE",
-                   yarp::os::Log::ErrorType,
-                   yarp::os::Log::ErrorType,
-                   &customLogCallback,
-                   nullptr);
+YARP_LOG_COMPONENT(ARV, "rl.AravisGigE")

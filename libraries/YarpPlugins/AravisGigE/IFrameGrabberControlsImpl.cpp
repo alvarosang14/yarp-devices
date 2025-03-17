@@ -21,23 +21,27 @@ bool AravisGigE::getCameraDescription(CameraDescriptor * camera)
     return true;
 }
 
-bool AravisGigE::hasFeature(int feature, bool * hasFeature)
-{
-    yCDebug(ARV) << "Request to know if camera has feature" << feature;
+bool AravisGigE::hasFeature(int feature, bool * hasFeature) {
+    yCDebug(ARV) << "Checking feature availability: " << feature;
 
-    //-- Check if YARP supports this feature
     auto f = static_cast<cameraFeature_id_t>(feature);
 
-    if (f < YARP_FEATURE_BRIGHTNESS || f > YARP_FEATURE_NUMBER_OF - 1)
-    {
+    if (f < YARP_FEATURE_BRIGHTNESS || f > YARP_FEATURE_NUMBER_OF - 1) {
         yCError(ARV) << "Feature" << feature << "not supported by YARP";
         return false;
     }
 
     //-- Check if device supports this feature
-    *hasFeature =
-        yarp_arv_int_feature_map.find(f) != yarp_arv_int_feature_map.end() ||
-        yarp_arv_float_feat_map.find(f) != yarp_arv_float_feat_map.end();
+    ArvDevice *device = arv_camera_get_device(camera);
+    const char *feature_name = feature_names.count(f) ?
+                                feature_names[f] : nullptr;
+
+    if (feature_name && arv_device_get_feature(device, feature_name)) {
+        *hasFeature = true;
+    } else {
+        *hasFeature = false;
+        yCWarning(ARV) << "Feature" << feature << "not found in camera";
+    }
 
     return true;
 }
@@ -52,22 +56,36 @@ bool AravisGigE::setFeature(int feature, double value)
     if (f < YARP_FEATURE_BRIGHTNESS || f > YARP_FEATURE_NUMBER_OF - 1)
     {
         yCError(ARV) << "Feature not supported by YARP";
+        std::cout << "==========Feature not supported by YARP=============";
         return false;
     }
 
     if (auto yarp_int_feature = yarp_arv_int_feature_map.find(f); yarp_int_feature != yarp_arv_int_feature_map.end())
     {
         //-- Check {here} that value is within range here (when you can inspect ranges)
+        std::cout << "==========Int=============";
         arv_device_set_integer_feature_value(arv_camera_get_device(camera), yarp_int_feature->second, value, nullptr);
     }
     else if (auto yarp_float_feature = yarp_arv_float_feat_map.find(f); yarp_float_feature != yarp_arv_float_feat_map.end())
     {
         //-- Check {here} that value is within range here (when you can inspect ranges)
-        arv_device_set_float_feature_value(arv_camera_get_device(camera), yarp_float_feature->second, value, nullptr);
+        std::cout << "==========Float=============";
+        GError *error = nullptr;  // Variable para capturar posibles errores
+        arv_device_set_float_feature_value(arv_camera_get_device(camera), yarp_float_feature->second, value, &error);
+
+        if (error) {
+            yCError(ARV) << "Error setting feature " << yarp_float_feature->second << ": " << error->message;
+            std::cout << "==========Erooooorrrrororor=============";
+            g_error_free(error);  // Liberar memoria del error
+            return false;
+        }
+
+
     }
     else
     {
         yCError(ARV) << "Property with yarp id" << f << "not available";
+        std::cout << "==========Fallo=============";
         return false;
     }
 
@@ -252,8 +270,10 @@ bool AravisGigE::getMode(int feature, FeatureMode * mode)
     //-- Check if device supports this feature
     //-- (No feature supports auto/manual mode currently. If any did, the code to discover that would go here)
     *mode = MODE_UNKNOWN;
+
     return true;
 }
+
 
 bool AravisGigE::setOnePush(int feature)
 {
@@ -274,33 +294,6 @@ void AravisGigE::listAvailableFeatures()
 {
     std::cout << "Listing available features:\n";
 
-    // Map of IDs
-    std::map<int, std::string> feature_names = {
-        {YARP_FEATURE_BRIGHTNESS, "Brightness"},
-        {YARP_FEATURE_EXPOSURE, "Exposure"},
-        {YARP_FEATURE_SHARPNESS, "Sharpness"},
-        {YARP_FEATURE_WHITE_BALANCE, "White Balance"},
-        {YARP_FEATURE_HUE, "Hue"},
-        {YARP_FEATURE_SATURATION, "Saturation"},
-        {YARP_FEATURE_GAMMA, "Gamma"},
-        {YARP_FEATURE_SHUTTER, "Shutter"},
-        {YARP_FEATURE_GAIN, "Gain"},
-        {YARP_FEATURE_IRIS, "Iris"},
-        {YARP_FEATURE_FOCUS, "Focus"},
-        {YARP_FEATURE_TEMPERATURE, "Temperature"},
-        {YARP_FEATURE_TRIGGER, "Trigger"},
-        {YARP_FEATURE_TRIGGER_DELAY, "Trigger Delay"},
-        {YARP_FEATURE_WHITE_SHADING, "White Shading"},
-        {YARP_FEATURE_FRAME_RATE, "Frame Rate"},
-        {YARP_FEATURE_ZOOM, "Zoom"},
-        {YARP_FEATURE_PAN, "Pan"},
-        {YARP_FEATURE_TILT, "Tilt"},
-        {YARP_FEATURE_OPTICAL_FILTER, "Optical Filter"},
-        {YARP_FEATURE_CAPTURE_SIZE, "Capture Size"},
-        {YARP_FEATURE_CAPTURE_QUALITY, "Capture Quality"},
-        {YARP_FEATURE_MIRROR, "Mirror"}
-    };
-
     ArvDevice *device = arv_camera_get_device(camera);
 
     for (const auto &feature : feature_names)
@@ -316,16 +309,19 @@ void AravisGigE::listAvailableFeatures()
             bool onOff = false;
             hasOnOff(feature.first, &onOff);
 
-            std::cout << "- " << feature.second << " (ID " << feature.first << ") is available. Mode: " << std::to_string(mode) << ". Isactive: " 
-            << isActive << ". Has OnOff: " << onOff << "\n";
+            double value = 0.0;
+            getFeature(feature.first, &value);
 
-            if (!arv_device_get_feature(device, feature.second.c_str())) {
+            std::cout << "- " << feature.second << " (ID " << feature.first << ") is available. Mode: " << std::to_string(mode) << ". Isactive: " 
+            << isActive << ". Has OnOff: " << onOff << ". Value: " << value << "\n";
+
+            if (!arv_device_get_feature(device, feature.second)) {
                 std::cout << "  -- " << feature.second << " No soported range values." << std::endl;
                 continue;
             }
 
             gint64 min_int = 0, max_int = 0;
-            arv_device_get_integer_feature_bounds(device, feature.second.c_str(), &min_int, &max_int, nullptr);
+            arv_device_get_integer_feature_bounds(device, feature.second, &min_int, &max_int, nullptr);
 
             if (min_int > std::numeric_limits<gint64>::min() && max_int < std::numeric_limits<gint64>::max()) {
                 std::cout << "  -- Range (INT) from " << feature.second << ": " << min_int << " - " << max_int << std::endl;
@@ -333,7 +329,7 @@ void AravisGigE::listAvailableFeatures()
             }
 
             gdouble min_float = 0, max_float = 0;
-            arv_device_get_float_feature_bounds(device, feature.second.c_str(), &min_float, &max_float, nullptr);
+            arv_device_get_float_feature_bounds(device, feature.second, &min_float, &max_float, nullptr);
 
             if (min_float > -std::numeric_limits<gdouble>::max() && max_float < std::numeric_limits<gdouble>::max()) {
                 std::cout << "  -- Range (FLOAT) from " << feature.second << ": " << min_float << " - " << max_float << std::endl;
