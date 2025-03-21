@@ -9,7 +9,10 @@ Copyright: Universidad Carlos III de Madrid (C) 2017;
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 """
 
-import os, sys
+import os
+import sys
+import ctypes
+import yarp
 
 from PySide2 import QtCore, QtGui, QtWidgets
 from PySide2 import QtUiTools
@@ -39,9 +42,22 @@ def load_ui(file_name, where=None):
 
 
 class GrabberControls2GuiGUI(QtWidgets.QWidget):
-    def __init__(self, controller=None, parent=None):
-        QtWidgets.QWidget.__init__(self, parent)
+    def __init__(self, controller, camera_port, parent=None):
+        """
+        :param controller: instancia de GrabberControls2GuiBackend
+        :param camera_port: puerto YARP (tipo yarp.Port) para leer imágenes (igual que yarpview)
+        """
+        super().__init__(parent)
+        self.controller = controller
+        self.controller.init()
 
+        # Puerto donde leeremos la imagen
+        self.camera_port = camera_port
+
+        # Estructura YARP para almacenar la imagen al leer
+        self.yarp_img = yarp.ImageRgb()
+
+        # Referencias a widgets de la UI
         self.zoomSlider = None
         self.zoomSpinBox = None
         self.focusSlider = None
@@ -53,11 +69,74 @@ class GrabberControls2GuiGUI(QtWidgets.QWidget):
         self.fpsSlider = None
         self.fpsSpinBox = None
 
-        self.controller = controller
-        self.controller.init()
+        self.brightnessSlider = None
+        self.brightnessSpinBox = None
+        self.shutterSlider = None
+        self.shutterSpinBox = None
+        self.irisSlider = None
+        self.irisSpinBox = None
+        self.temperatureSlider = None
+        self.temperatureSpinBox = None
+        self.whiteShadingSlider = None
+        self.whiteShadingSpinBox = None
+        self.captureSizeSlider = None
+        self.captureSizeSpinBox = None
+        self.captureQualitySlider = None
+        self.captureQualitySpinBox = None
+        self.mirrorSlider = None
+        self.mirrorSpinBox = None
+        self.sharpnessSlider = None
+        self.sharpnessSpinBox = None
+        self.whiteBalanceSlider = None
+        self.whiteBalanceSpinBox = None
+        self.hueSlider = None
+        self.hueSpinBox = None
+        self.saturationSlider = None
+        self.saturationSpinBox = None
+        self.gammaSlider = None
+        self.gammaSpinBox = None
+        self.triggerSlider = None
+        self.triggerSpinBox = None
+        self.triggerDelaySlider = None
+        self.triggerDelaySpinBox = None
+        self.panSlider = None
+        self.panSpinBox = None
+        self.tiltSlider = None
+        self.tiltSpinBox = None
+        self.opticalFilterSlider = None
+        self.opticalFilterSpinBox = None
+
+        # Referencias a layouts de la UI
+        self.zoomLayout = None
+        self.focusLayout = None
+        self.gainLayout = None
+        self.exposureLayout = None
+        self.fpsLayout = None
+        self.brightnessLayout = None
+        self.shutterLayout = None
+        self.irisLayout = None
+        self.temperatureLayout = None
+        self.whiteShadingLayout = None
+        self.captureSizeLayout = None
+        self.captureQualityLayout = None
+        self.mirrorLayout = None
+        self.sharpnessLayout = None
+        self.whiteBalanceLayout = None
+        self.hueLayout = None
+        self.saturationLayout = None
+        self.gammaLayout = None
+        self.triggerLayout = None
+        self.triggerDelayLayout = None
+        self.panLayout = None
+        self.tiltLayout = None
+        self.opticalFilterLayout = None
+
+        self.current_pixmap = None
+        self.cameraView = None
 
         self.setupUI()
         self.resetValues()
+        self.startCameraReading()
 
     def setupUI(self):
         # Load UI and set it as main layout
@@ -78,29 +157,76 @@ class GrabberControls2GuiGUI(QtWidgets.QWidget):
         self.exposureSpinBox = self.findChild(QtWidgets.QDoubleSpinBox, 'exposureSpinBox')
         self.fpsSlider = self.findChild(QtWidgets.QSlider, 'fpsSlider')
         self.fpsSpinBox = self.findChild(QtWidgets.QDoubleSpinBox, 'fpsSpinBox')
+        self.brightnessSlider = self.findChild(QtWidgets.QSlider, 'brightnessSlider')
+        self.brightnessSpinBox = self.findChild(QtWidgets.QDoubleSpinBox, 'brightnessSpinBox')
+        self.shutterSlider = self.findChild(QtWidgets.QSlider, 'shutterSlider')
+        self.shutterSpinBox = self.findChild(QtWidgets.QDoubleSpinBox, 'shutterSpinBox')
+        self.irisSlider = self.findChild(QtWidgets.QSlider, 'irisSlider')
+        self.irisSpinBox = self.findChild(QtWidgets.QDoubleSpinBox, 'irisSpinBox')
+        self.temperatureSlider = self.findChild(QtWidgets.QSlider, 'temperatureSlider')
+        self.temperatureSpinBox = self.findChild(QtWidgets.QDoubleSpinBox, 'temperatureSpinBox')
+        self.whiteShadingSlider = self.findChild(QtWidgets.QSlider, 'whiteShadingSlider')
+        self.whiteShadingSpinBox = self.findChild(QtWidgets.QDoubleSpinBox, 'whiteShadingSpinBox')
+        self.captureSizeSlider = self.findChild(QtWidgets.QSlider, 'captureSizeSlider')
+        self.captureSizeSpinBox = self.findChild(QtWidgets.QDoubleSpinBox, 'captureSizeSpinBox')
+        self.captureQualitySlider = self.findChild(QtWidgets.QSlider, 'captureQualitySlider')
+        self.captureQualitySpinBox = self.findChild(QtWidgets.QDoubleSpinBox, 'captureQualitySpinBox')
+        self.mirrorSlider = self.findChild(QtWidgets.QSlider, 'mirrorSlider')
+        self.mirrorSpinBox = self.findChild(QtWidgets.QDoubleSpinBox, 'mirrorSpinBox')
+        self.sharpnessSlider = self.findChild(QtWidgets.QSlider, 'sharpnessSlider')
+        self.sharpnessSpinBox = self.findChild(QtWidgets.QDoubleSpinBox, 'sharpnessSpinBox')
+        self.whiteBalanceSlider = self.findChild(QtWidgets.QSlider, 'whiteBalanceSlider')
+        self.whiteBalanceSpinBox = self.findChild(QtWidgets.QDoubleSpinBox, 'whiteBalanceSpinBox')
+        self.hueSlider = self.findChild(QtWidgets.QSlider, 'hueSlider')
+        self.hueSpinBox = self.findChild(QtWidgets.QDoubleSpinBox, 'hueSpinBox')
+        self.saturationSlider = self.findChild(QtWidgets.QSlider, 'saturationSlider')
+        self.saturationSpinBox = self.findChild(QtWidgets.QDoubleSpinBox, 'saturationSpinBox')
+        self.gammaSlider = self.findChild(QtWidgets.QSlider, 'gammaSlider')
+        self.gammaSpinBox = self.findChild(QtWidgets.QDoubleSpinBox, 'gammaSpinBox')
+        self.triggerSlider = self.findChild(QtWidgets.QSlider, 'triggerSlider')
+        self.triggerSpinBox = self.findChild(QtWidgets.QDoubleSpinBox, 'triggerSpinBox')
+        self.triggerDelaySlider = self.findChild(QtWidgets.QSlider, 'triggerDelaySlider')
+        self.triggerDelaySpinBox = self.findChild(QtWidgets.QDoubleSpinBox, 'triggerDelaySpinBox')
+        self.panSlider = self.findChild(QtWidgets.QSlider, 'panSlider')
+        self.panSpinBox = self.findChild(QtWidgets.QDoubleSpinBox, 'panSpinBox')
+        self.tiltSlider = self.findChild(QtWidgets.QSlider, 'tiltSlider')
+        self.tiltSpinBox = self.findChild(QtWidgets.QDoubleSpinBox, 'tiltSpinBox')
+        self.opticalFilterSlider = self.findChild(QtWidgets.QSlider, 'opticalFilterSlider')
+        self.opticalFilterSpinBox = self.findChild(QtWidgets.QDoubleSpinBox, 'opticalFilterSpinBox')
 
-        # Configure widget ranges:
-        max_float = sys.float_info.max
-        self.zoomSlider.setMinimum(0)
-        self.zoomSlider.setMaximum(100)
-        self.zoomSpinBox.setMinimum(0)
-        self.zoomSpinBox.setMaximum(100)
-        self.focusSlider.setMinimum(0)
-        self.focusSlider.setMaximum(1000)
-        self.focusSpinBox.setMinimum(0)
-        self.focusSpinBox.setMaximum(1000)
-        self.gainSlider.setMinimum(0)
-        self.gainSlider.setMaximum(30) # Not sure about this one, have to check with actual hardware
-        self.gainSpinBox.setMinimum(0)
-        self.gainSpinBox.setMaximum(30)
-        self.exposureSlider.setMinimum(0)
-        self.exposureSlider.setMaximum(100000) # Not sure again
-        self.exposureSpinBox.setMinimum(0)
-        self.exposureSpinBox.setMaximum(100000)
-        self.fpsSlider.setMinimum(0)
-        self.fpsSlider.setMaximum(30) # Not sure
-        self.fpsSpinBox.setMinimum(0)
-        self.fpsSpinBox.setMaximum(30)
+        # Get a reference to all required layouts
+        self.zoomLayout = self.findChild(QtWidgets.QHBoxLayout, 'zoomLayout')
+        self.focusLayout = self.findChild(QtWidgets.QHBoxLayout, 'focusLayout')
+        self.gainLayout = self.findChild(QtWidgets.QHBoxLayout, 'gainLayout')
+        self.exposureLayout = self.findChild(QtWidgets.QHBoxLayout, 'exposureLayout')
+        self.fpsLayout = self.findChild(QtWidgets.QHBoxLayout, 'fpsLayout')
+        self.brightnessLayout = self.findChild(QtWidgets.QHBoxLayout, 'brightnessLayout')
+        self.shutterLayout = self.findChild(QtWidgets.QHBoxLayout, 'shutterLayout')
+        self.irisLayout = self.findChild(QtWidgets.QHBoxLayout, 'irisLayout')
+        self.temperatureLayout = self.findChild(QtWidgets.QHBoxLayout, 'temperatureLayout')
+        self.whiteShadingLayout = self.findChild(QtWidgets.QHBoxLayout, 'whiteShadingLayout')
+        self.captureSizeLayout = self.findChild(QtWidgets.QHBoxLayout, 'captureSizeLayout')
+        self.captureQualityLayout = self.findChild(QtWidgets.QHBoxLayout, 'captureQualityLayout')
+        self.mirrorLayout = self.findChild(QtWidgets.QHBoxLayout, 'mirrorLayout')
+        self.sharpnessLayout = self.findChild(QtWidgets.QHBoxLayout, 'sharpnessLayout')
+        self.whiteBalanceLayout = self.findChild(QtWidgets.QHBoxLayout, 'whiteBalanceLayout')
+        self.hueLayout = self.findChild(QtWidgets.QHBoxLayout, 'hueLayout')
+        self.saturationLayout = self.findChild(QtWidgets.QHBoxLayout, 'saturationLayout')
+        self.gammaLayout = self.findChild(QtWidgets.QHBoxLayout, 'gammaLayout')
+        self.triggerLayout = self.findChild(QtWidgets.QHBoxLayout, 'triggerLayout')
+        self.triggerDelayLayout = self.findChild(QtWidgets.QHBoxLayout, 'triggerDelayLayout')
+        self.panLayout = self.findChild(QtWidgets.QHBoxLayout, 'panLayout')
+        self.tiltLayout = self.findChild(QtWidgets.QHBoxLayout, 'tiltLayout')
+        self.opticalFilterLayout = self.findChild(QtWidgets.QHBoxLayout, 'opticalFilterLayout')
+
+        # Label donde mostraremos la imagen (en tu .ui debe existir un QLabel con objectName="cameraView")
+        self.cameraView = self.findChild(QtWidgets.QLabel, 'cameraView')
+        if self.cameraView is not None:
+            self.cameraView.setText("Esperando imagen de la cámara...")
+
+        self.setMinimumSize(640, 480)
+        self.cameraView.setScaledContents(False)
+        self.cameraView.setSizePolicy(QtWidgets.QSizePolicy.Ignored, QtWidgets.QSizePolicy.Ignored)
 
         # Disable widgets if feature not supported
         self.zoomSlider.setEnabled(self.controller.has_zoom())
@@ -114,6 +240,46 @@ class GrabberControls2GuiGUI(QtWidgets.QWidget):
         self.fpsSlider.setEnabled(self.controller.has_FPS())
         self.fpsSpinBox.setEnabled(self.controller.has_FPS())
 
+        self.brightnessSlider.setEnabled(self.controller.has_brightness())
+        self.brightnessSpinBox.setEnabled(self.controller.has_brightness())
+        self.shutterSlider.setEnabled(self.controller.has_shutter())
+        self.shutterSpinBox.setEnabled(self.controller.has_shutter())
+        self.irisSlider.setEnabled(self.controller.has_iris())
+        self.irisSpinBox.setEnabled(self.controller.has_iris())
+        self.temperatureSlider.setEnabled(self.controller.has_temperature())
+        self.temperatureSpinBox.setEnabled(self.controller.has_temperature())
+        self.whiteShadingSlider.setEnabled(self.controller.has_white_shading())
+        self.whiteShadingSpinBox.setEnabled(self.controller.has_white_shading())
+        self.captureSizeSlider.setEnabled(self.controller.has_capture_size())
+        self.captureSizeSpinBox.setEnabled(self.controller.has_capture_size())
+        self.captureQualitySlider.setEnabled(self.controller.has_capture_quality())
+        self.captureQualitySpinBox.setEnabled(self.controller.has_capture_quality())
+        self.mirrorSlider.setEnabled(self.controller.has_mirror())
+        self.mirrorSpinBox.setEnabled(self.controller.has_mirror())
+        self.sharpnessSlider.setEnabled(self.controller.has_sharpness())
+        self.sharpnessSpinBox.setEnabled(self.controller.has_sharpness())
+        self.whiteBalanceSlider.setEnabled(self.controller.has_white_balance())
+        self.whiteBalanceSpinBox.setEnabled(self.controller.has_white_balance())
+        self.hueSlider.setEnabled(self.controller.has_hue())
+        self.hueSpinBox.setEnabled(self.controller.has_hue())
+        self.saturationSlider.setEnabled(self.controller.has_saturation())
+        self.saturationSpinBox.setEnabled(self.controller.has_saturation())
+        self.gammaSlider.setEnabled(self.controller.has_gamma())
+        self.gammaSpinBox.setEnabled(self.controller.has_gamma())
+        self.triggerSlider.setEnabled(self.controller.has_trigger())
+        self.triggerSpinBox.setEnabled(self.controller.has_trigger())
+        self.triggerDelaySlider.setEnabled(self.controller.has_trigger_delay())
+        self.triggerDelaySpinBox.setEnabled(self.controller.has_trigger_delay())
+        self.panSlider.setEnabled(self.controller.has_pan())
+        self.panSpinBox.setEnabled(self.controller.has_pan())
+        self.tiltSlider.setEnabled(self.controller.has_tilt())
+        self.tiltSpinBox.setEnabled(self.controller.has_tilt())
+        self.opticalFilterSlider.setEnabled(self.controller.has_optical_filter())
+        self.opticalFilterSpinBox.setEnabled(self.controller.has_optical_filter())
+
+        # Set visibility of widgets based on controller features
+        self.visibility()
+
         # Connect to signals:
         self.zoomSlider.valueChanged.connect(self.onZoomSliderChanged)
         self.zoomSpinBox.valueChanged.connect(self.onZoomSpinBoxChanged)
@@ -125,6 +291,43 @@ class GrabberControls2GuiGUI(QtWidgets.QWidget):
         self.exposureSpinBox.valueChanged.connect(self.onExposureSpinBoxChanged)
         self.fpsSlider.valueChanged.connect(self.onfpsSliderChanged)
         self.fpsSpinBox.valueChanged.connect(self.onfpsSpinBoxChanged)
+
+        self.brightnessSlider.valueChanged.connect(self.onBrightnessSliderChanged)
+        self.brightnessSpinBox.valueChanged.connect(self.onBrightnessSpinBoxChanged)
+        self.shutterSlider.valueChanged.connect(self.onShutterSliderChanged)
+        self.shutterSpinBox.valueChanged.connect(self.onShutterSpinBoxChanged)
+        self.irisSlider.valueChanged.connect(self.onIrisSliderChanged)
+        self.irisSpinBox.valueChanged.connect(self.onIrisSpinBoxChanged)
+        self.temperatureSlider.valueChanged.connect(self.onTemperatureSliderChanged)
+        self.temperatureSpinBox.valueChanged.connect(self.onTemperatureSpinBoxChanged)
+        self.whiteShadingSlider.valueChanged.connect(self.onWhiteShadingSliderChanged)
+        self.whiteShadingSpinBox.valueChanged.connect(self.onWhiteShadingSpinBoxChanged)
+        self.captureSizeSlider.valueChanged.connect(self.onCaptureSizeSliderChanged)
+        self.captureSizeSpinBox.valueChanged.connect(self.onCaptureSizeSpinBoxChanged)
+        self.captureQualitySlider.valueChanged.connect(self.onCaptureQualitySliderChanged)
+        self.captureQualitySpinBox.valueChanged.connect(self.onCaptureQualitySpinBoxChanged)
+        self.mirrorSlider.valueChanged.connect(self.onMirrorSliderChanged)
+        self.mirrorSpinBox.valueChanged.connect(self.onMirrorSpinBoxChanged)
+        self.sharpnessSlider.valueChanged.connect(self.onSharpnessSliderChanged)
+        self.sharpnessSpinBox.valueChanged.connect(self.onSharpnessSpinBoxChanged)
+        self.whiteBalanceSlider.valueChanged.connect(self.onWhiteBalanceSliderChanged)
+        self.whiteBalanceSpinBox.valueChanged.connect(self.onWhiteBalanceSpinBoxChanged)
+        self.hueSlider.valueChanged.connect(self.onHueSliderChanged)
+        self.hueSpinBox.valueChanged.connect(self.onHueSpinBoxChanged)
+        self.saturationSlider.valueChanged.connect(self.onSaturationSliderChanged)
+        self.saturationSpinBox.valueChanged.connect(self.onSaturationSpinBoxChanged)
+        self.gammaSlider.valueChanged.connect(self.onGammaSliderChanged)
+        self.gammaSpinBox.valueChanged.connect(self.onGammaSpinBoxChanged)
+        self.triggerSlider.valueChanged.connect(self.onTriggerSliderChanged)
+        self.triggerSpinBox.valueChanged.connect(self.onTriggerSpinBoxChanged)
+        self.triggerDelaySlider.valueChanged.connect(self.onTriggerDelaySliderChanged)
+        self.triggerDelaySpinBox.valueChanged.connect(self.onTriggerDelaySpinBoxChanged)
+        self.panSlider.valueChanged.connect(self.onPanSliderChanged)
+        self.panSpinBox.valueChanged.connect(self.onPanSpinBoxChanged)
+        self.tiltSlider.valueChanged.connect(self.onTiltSliderChanged)
+        self.tiltSpinBox.valueChanged.connect(self.onTiltSpinBoxChanged)
+        self.opticalFilterSlider.valueChanged.connect(self.onOpticalFilterSliderChanged)
+        self.opticalFilterSpinBox.valueChanged.connect(self.onOpticalFilterSpinBoxChanged)
 
     def resetValues(self):
         self.zoomSlider.setValue(0)
@@ -138,6 +341,268 @@ class GrabberControls2GuiGUI(QtWidgets.QWidget):
         self.fpsSlider.setValue(0)
         self.fpsSpinBox.setValue(0)
 
+        self.brightnessSlider.setValue(0)
+        self.brightnessSpinBox.setValue(0)
+        self.shutterSlider.setValue(0)
+        self.shutterSpinBox.setValue(0)
+        self.irisSlider.setValue(0)
+        self.irisSpinBox.setValue(0)
+        self.temperatureSlider.setValue(0)
+        self.temperatureSpinBox.setValue(0)
+        self.whiteShadingSlider.setValue(0)
+        self.whiteShadingSpinBox.setValue(0)
+        self.captureSizeSlider.setValue(0)
+        self.captureSizeSpinBox.setValue(0)
+        self.captureQualitySlider.setValue(0)
+        self.captureQualitySpinBox.setValue(0)
+        self.mirrorSlider.setValue(0)
+        self.mirrorSpinBox.setValue(0)
+        self.sharpnessSlider.setValue(0)
+        self.sharpnessSpinBox.setValue(0)
+        self.whiteBalanceSlider.setValue(0)
+        self.whiteBalanceSpinBox.setValue(0)
+        self.hueSlider.setValue(0)
+        self.hueSpinBox.setValue(0)
+        self.saturationSlider.setValue(0)
+        self.saturationSpinBox.setValue(0)
+        self.gammaSlider.setValue(0)
+        self.gammaSpinBox.setValue(0)
+        self.triggerSlider.setValue(0)
+        self.triggerSpinBox.setValue(0)
+        self.triggerDelaySlider.setValue(0)
+        self.triggerDelaySpinBox.setValue(0)
+        self.panSlider.setValue(0)
+        self.panSpinBox.setValue(0)
+        self.tiltSlider.setValue(0)
+        self.tiltSpinBox.setValue(0)
+        self.opticalFilterSlider.setValue(0)
+        self.opticalFilterSpinBox.setValue(0)
+
+    def startCameraReading(self):
+        """
+        Arranca un temporizador que intentará leer imágenes
+        del puerto camera_port periódicamente (~30fps).
+        """
+        self._timer = QtCore.QTimer(self)
+        self._timer.timeout.connect(self.updateCameraView)
+        self._timer.start(33)
+
+    def visibility(self):
+        if not self.controller.has_brightness():
+            self.brightnessSlider.setVisible(False)
+            self.brightnessSpinBox.setVisible(False)
+            self.findChild(QtWidgets.QLabel, 'brightnessLabel').setVisible(False)
+        else:
+            self.brightnessSlider.setEnabled(True)
+            self.brightnessSpinBox.setEnabled(True)
+            self.findChild(QtWidgets.QLabel, 'brightnessLabel').setEnabled(True)
+
+        if not self.controller.has_shutter():
+            self.shutterSlider.setVisible(False)
+            self.shutterSpinBox.setVisible(False)
+            self.findChild(QtWidgets.QLabel, 'shutterLabel').setVisible(False)
+        else:
+            self.shutterSlider.setEnabled(True)
+            self.shutterSpinBox.setEnabled(True)
+            self.findChild(QtWidgets.QLabel, 'shutterLabel').setEnabled(True)
+
+        if not self.controller.has_iris():
+            self.irisSlider.setVisible(False)
+            self.irisSpinBox.setVisible(False)
+            self.findChild(QtWidgets.QLabel, 'irisLabel').setVisible(False)
+        else:
+            self.irisSlider.setEnabled(True)
+            self.irisSpinBox.setEnabled(True)
+            self.findChild(QtWidgets.QLabel, 'irisLabel').setEnabled(True)
+
+        if not self.controller.has_focus():
+            self.focusSlider.setVisible(False)
+            self.focusSpinBox.setVisible(False)
+            self.findChild(QtWidgets.QLabel, 'focusLabel').setVisible(False)
+        else:
+            self.focusSlider.setEnabled(True)
+            self.focusSpinBox.setEnabled(True)
+            self.findChild(QtWidgets.QLabel, 'focusLabel').setEnabled(True)
+
+        if not self.controller.has_temperature():
+            self.temperatureSlider.setVisible(False)
+            self.temperatureSpinBox.setVisible(False)
+            self.findChild(QtWidgets.QLabel, 'temperatureLabel').setVisible(False)
+        else:
+            self.temperatureSlider.setEnabled(True)
+            self.temperatureSpinBox.setEnabled(True)
+            self.findChild(QtWidgets.QLabel, 'temperatureLabel').setEnabled(True)
+
+        if not self.controller.has_white_shading():
+            self.whiteShadingSlider.setVisible(False)
+            self.whiteShadingSpinBox.setVisible(False)
+            self.findChild(QtWidgets.QLabel, 'whiteShadingLabel').setVisible(False)
+        else:
+            self.whiteShadingSlider.setEnabled(True)
+            self.whiteShadingSpinBox.setEnabled(True)
+            self.findChild(QtWidgets.QLabel, 'whiteShadingLabel').setEnabled(True)
+
+        if not self.controller.has_capture_size():
+            self.captureSizeSlider.setVisible(False)
+            self.captureSizeSpinBox.setVisible(False)
+            self.findChild(QtWidgets.QLabel, 'captureSizeLabel').setVisible(False)
+        else:
+            self.captureSizeSlider.setEnabled(True)
+            self.captureSizeSpinBox.setEnabled(True)
+            self.findChild(QtWidgets.QLabel, 'captureSizeLabel').setEnabled(True)
+
+        if not self.controller.has_capture_quality():
+            self.captureQualitySlider.setVisible(False)
+            self.captureQualitySpinBox.setVisible(False)
+            self.findChild(QtWidgets.QLabel, 'captureQualityLabel').setVisible(False)
+        else:
+            self.captureQualitySlider.setEnabled(True)
+            self.captureQualitySpinBox.setEnabled(True)
+            self.findChild(QtWidgets.QLabel, 'captureQualityLabel').setEnabled(True)
+
+        if not self.controller.has_mirror():
+            self.mirrorSlider.setVisible(False)
+            self.mirrorSpinBox.setVisible(False)
+            self.findChild(QtWidgets.QLabel, 'mirrorLabel').setVisible(False)
+        else:
+            self.mirrorSlider.setEnabled(True)
+            self.mirrorSpinBox.setEnabled(True)
+            self.findChild(QtWidgets.QLabel, 'mirrorLabel').setEnabled(True)
+
+        if not self.controller.has_sharpness():
+            self.sharpnessSlider.setVisible(False)
+            self.sharpnessSpinBox.setVisible(False)
+            self.findChild(QtWidgets.QLabel, 'sharpnessLabel').setVisible(False)
+        else:
+            self.sharpnessSlider.setEnabled(True)
+            self.sharpnessSpinBox.setEnabled(True)
+            self.findChild(QtWidgets.QLabel, 'sharpnessLabel').setEnabled(True)
+
+        if not self.controller.has_white_balance():
+            self.whiteBalanceSlider.setVisible(False)
+            self.whiteBalanceSpinBox.setVisible(False)
+            self.findChild(QtWidgets.QLabel, 'whiteBalanceLabel').setVisible(False)
+        else:
+            self.whiteBalanceSlider.setEnabled(True)
+            self.whiteBalanceSpinBox.setEnabled(True)
+            self.findChild(QtWidgets.QLabel, 'whiteBalanceLabel').setEnabled(True)
+
+        if not self.controller.has_hue():
+            self.hueSlider.setVisible(False)
+            self.hueSpinBox.setVisible(False)
+            self.findChild(QtWidgets.QLabel, 'hueLabel').setVisible(False)
+        else:
+            self.hueSlider.setEnabled(True)
+            self.hueSpinBox.setEnabled(True)
+            self.findChild(QtWidgets.QLabel, 'hueLabel').setEnabled(True)
+
+        if not self.controller.has_saturation():
+            self.saturationSlider.setVisible(False)
+            self.saturationSpinBox.setVisible(False)
+            self.findChild(QtWidgets.QLabel, 'saturationLabel').setVisible(False)
+        else:
+            self.saturationSlider.setEnabled(True)
+            self.saturationSpinBox.setEnabled(True)
+            self.findChild(QtWidgets.QLabel, 'saturationLabel').setEnabled(True)
+
+        if not self.controller.has_gamma():
+            self.gammaSlider.setVisible(False)
+            self.gammaSpinBox.setVisible(False)
+            self.findChild(QtWidgets.QLabel, 'gammaLabel').setVisible(False)
+        else:
+            self.gammaSlider.setEnabled(True)
+            self.gammaSpinBox.setEnabled(True)
+            self.findChild(QtWidgets.QLabel, 'gammaLabel').setEnabled(True)
+
+        if not self.controller.has_trigger():
+            self.triggerSlider.setVisible(False)
+            self.triggerSpinBox.setVisible(False)
+            self.findChild(QtWidgets.QLabel, 'triggerLabel').setVisible(False)
+        else:
+            self.triggerSlider.setEnabled(True)
+            self.triggerSpinBox.setEnabled(True)
+            self.findChild(QtWidgets.QLabel, 'triggerLabel').setEnabled(True)
+
+        if not self.controller.has_trigger_delay():
+            self.triggerDelaySlider.setVisible(False)
+            self.triggerDelaySpinBox.setVisible(False)
+            self.findChild(QtWidgets.QLabel, 'triggerDelayLabel').setVisible(False)
+        else:
+            self.triggerDelaySlider.setEnabled(True)
+            self.triggerDelaySpinBox.setEnabled(True)
+            self.findChild(QtWidgets.QLabel, 'triggerDelayLabel').setEnabled(True)
+
+        if not self.controller.has_zoom():
+            self.zoomSlider.setVisible(False)
+            self.zoomSpinBox.setVisible(False)
+            self.findChild(QtWidgets.QLabel, 'zoomLabel').setVisible(False)
+        else:
+            self.zoomSlider.setEnabled(True)
+            self.zoomSpinBox.setEnabled(True)
+            self.findChild(QtWidgets.QLabel, 'zoomLabel').setEnabled(True)
+
+        if not self.controller.has_pan():
+            self.panSlider.setVisible(False)
+            self.panSpinBox.setVisible(False)
+            self.findChild(QtWidgets.QLabel, 'panLabel').setVisible(False)
+        else:
+            self.panSlider.setEnabled(True)
+            self.panSpinBox.setEnabled(True)
+            self.findChild(QtWidgets.QLabel, 'panLabel').setEnabled(True)
+
+        if not self.controller.has_tilt():
+            self.tiltSlider.setVisible(False)
+            self.tiltSpinBox.setVisible(False)
+            self.findChild(QtWidgets.QLabel, 'tiltLabel').setVisible(False)
+        else:
+            self.tiltSlider.setEnabled(True)
+            self.tiltSpinBox.setEnabled(True)
+            self.findChild(QtWidgets.QLabel, 'tiltLabel').setEnabled(True)
+
+        if not self.controller.has_optical_filter():
+            self.opticalFilterSlider.setVisible(False)
+            self.opticalFilterSpinBox.setVisible(False)
+            self.findChild(QtWidgets.QLabel, 'opticalFilterLabel').setVisible(False)
+        else:
+            self.opticalFilterSlider.setEnabled(True)
+            self.opticalFilterSpinBox.setEnabled(True)
+            self.findChild(QtWidgets.QLabel, 'opticalFilterLabel').setEnabled(True)
+
+        if not self.controller.has_FPS():
+            self.fpsSlider.setVisible(False)
+            self.fpsSpinBox.setVisible(False)
+            self.findChild(QtWidgets.QLabel, 'fpsLabel').setVisible(False)
+        else:
+            self.fpsSlider.setEnabled(True)
+            self.fpsSpinBox.setEnabled(True)
+            self.findChild(QtWidgets.QLabel, 'fpsLabel').setEnabled(True)
+
+
+    def updateCameraView(self):
+        if self.camera_port is None or self.cameraView is None:
+            return
+
+        if self.camera_port.read(self.yarp_img):
+            w = self.yarp_img.width()
+            h = self.yarp_img.height()
+            if w == 0 or h == 0:
+                return
+
+            step = w * 3
+            c_ptr = self.yarp_img.getRawImage().__int__()
+            array_type = ctypes.c_ubyte * (w * h * 3)
+            raw_buffer = array_type.from_address(c_ptr)
+            image_bytes = bytearray(raw_buffer)
+
+            qimg = QtGui.QImage(image_bytes, w, h, step, QtGui.QImage.Format_RGB888)
+            self.current_pixmap = QtGui.QPixmap.fromImage(qimg)
+
+            # Aquí llamamos al reescalado automático
+            self.updateScaledPixmap()
+
+    # -------------------------------------------------------------------------
+    # Slots de los sliders/spinBoxes -> llaman a métodos de controller (backend)
+    # -------------------------------------------------------------------------
     def onZoomSliderChanged(self):
         zoom = self.zoomSlider.value()
         if zoom != self.zoomSpinBox.value():
@@ -189,11 +654,240 @@ class GrabberControls2GuiGUI(QtWidgets.QWidget):
     def onfpsSliderChanged(self):
         fps = self.fpsSlider.value()
         if fps != self.fpsSpinBox.value():
-            self.controller.set_FPS(fps)
+            self.controller.set_fps(fps)
             self.fpsSpinBox.setValue(fps)
 
     def onfpsSpinBoxChanged(self):
         fps = self.fpsSpinBox.value()
         if fps != self.fpsSlider.value():
-            self.controller.set_FPS(fps)
+            self.controller.set_fps(fps)
             self.fpsSlider.setValue(fps)
+
+    def onBrightnessSliderChanged(self):
+        brightness = self.brightnessSlider.value()
+        if brightness != self.brightnessSpinBox.value():
+            self.controller.set_brightness(brightness)
+            self.brightnessSpinBox.setValue(brightness)
+
+    def onBrightnessSpinBoxChanged(self):
+        brightness = self.brightnessSpinBox.value()
+        if brightness != self.brightnessSlider.value():
+            self.controller.set_brightness(brightness)
+            self.brightnessSlider.setValue(brightness)
+
+    def onShutterSliderChanged(self):
+        shutter = self.shutterSlider.value()
+        if shutter != self.shutterSpinBox.value():
+            self.controller.set_shutter(shutter)
+            self.shutterSpinBox.setValue(shutter)
+
+    def onShutterSpinBoxChanged(self):
+        shutter = self.shutterSpinBox.value()
+        if shutter != self.shutterSlider.value():
+            self.controller.set_shutter(shutter)
+            self.shutterSlider.setValue(shutter)
+
+    def onIrisSliderChanged(self):
+        iris = self.irisSlider.value()
+        if iris != self.irisSpinBox.value():
+            self.controller.set_iris(iris)
+            self.irisSpinBox.setValue(iris)
+
+    def onIrisSpinBoxChanged(self):
+        iris = self.irisSpinBox.value()
+        if iris != self.irisSlider.value():
+            self.controller.set_iris(iris)
+            self.irisSlider.setValue(iris)
+
+    def onTemperatureSliderChanged(self):
+        temperature = self.temperatureSlider.value()
+        if temperature != self.temperatureSpinBox.value():
+            self.controller.set_temperature(temperature)
+            self.temperatureSpinBox.setValue(temperature)
+
+    def onTemperatureSpinBoxChanged(self):
+        temperature = self.temperatureSpinBox.value()
+        if temperature != self.temperatureSlider.value():
+            self.controller.set_temperature(temperature)
+            self.temperatureSlider.setValue(temperature)
+
+    def onWhiteShadingSliderChanged(self):
+        white_shading = self.whiteShadingSlider.value()
+        if white_shading != self.whiteShadingSpinBox.value():
+            self.controller.set_white_shading(white_shading)
+            self.whiteShadingSpinBox.setValue(white_shading)
+
+    def onWhiteShadingSpinBoxChanged(self):
+        white_shading = self.whiteShadingSpinBox.value()
+        if white_shading != self.whiteShadingSlider.value():
+            self.controller.set_white_shading(white_shading)
+            self.whiteShadingSlider.setValue(white_shading)
+
+    def onCaptureSizeSliderChanged(self):
+        capture_size = self.captureSizeSlider.value()
+        if capture_size != self.captureSizeSpinBox.value():
+            self.controller.set_capture_size(capture_size)
+            self.captureSizeSpinBox.setValue(capture_size)
+
+    def onCaptureSizeSpinBoxChanged(self):
+        capture_size = self.captureSizeSpinBox.value()
+        if capture_size != self.captureSizeSlider.value():
+            self.controller.set_capture_size(capture_size)
+            self.captureSizeSlider.setValue(capture_size)
+
+    def onCaptureQualitySliderChanged(self):
+        capture_quality = self.captureQualitySlider.value()
+        if capture_quality != self.captureQualitySpinBox.value():
+            self.controller.set_capture_quality(capture_quality)
+            self.captureQualitySpinBox.setValue(capture_quality)
+
+    def onCaptureQualitySpinBoxChanged(self):
+        capture_quality = self.captureQualitySpinBox.value()
+        if capture_quality != self.captureQualitySlider.value():
+            self.controller.set_capture_quality(capture_quality)
+            self.captureQualitySlider.setValue(capture_quality)
+
+    def onMirrorSliderChanged(self):
+        mirror = self.mirrorSlider.value()
+        if mirror != self.mirrorSpinBox.value():
+            self.controller.set_mirror(mirror)
+            self.mirrorSpinBox.setValue(mirror)
+
+    def onMirrorSpinBoxChanged(self):
+        mirror = self.mirrorSpinBox.value()
+        if mirror != self.mirrorSlider.value():
+            self.controller.set_mirror(mirror)
+            self.mirrorSlider.setValue(mirror)
+
+    def onSharpnessSliderChanged(self):
+        sharpness = self.sharpnessSlider.value()
+        if sharpness != self.sharpnessSpinBox.value():
+            self.controller.set_sharpness(sharpness)
+            self.sharpnessSpinBox.setValue(sharpness)
+
+    def onSharpnessSpinBoxChanged(self):
+        sharpness = self.sharpnessSpinBox.value()
+        if sharpness != self.sharpnessSlider.value():
+            self.controller.set_sharpness(sharpness)
+            self.sharpnessSlider.setValue(sharpness)
+
+    def onWhiteBalanceSliderChanged(self):
+        white_balance = self.whiteBalanceSlider.value()
+        if white_balance != self.whiteBalanceSpinBox.value():
+            self.controller.set_white_balance(white_balance)
+            self.whiteBalanceSpinBox.setValue(white_balance)
+
+    def onWhiteBalanceSpinBoxChanged(self):
+        white_balance = self.whiteBalanceSpinBox.value()
+        if white_balance != self.whiteBalanceSlider.value():
+            self.controller.set_white_balance(white_balance)
+            self.whiteBalanceSlider.setValue(white_balance)
+
+    def onHueSliderChanged(self):
+        hue = self.hueSlider.value()
+        if hue != self.hueSpinBox.value():
+            self.controller.set_hue(hue)
+            self.hueSpinBox.setValue(hue)
+
+    def onHueSpinBoxChanged(self):
+        hue = self.hueSpinBox.value()
+        if hue != self.hueSlider.value():
+            self.controller.set_hue(hue)
+            self.hueSlider.setValue(hue)
+
+    def onSaturationSliderChanged(self):
+        saturation = self.saturationSlider.value()
+        if saturation != self.saturationSpinBox.value():
+            self.controller.set_saturation(saturation)
+            self.saturationSpinBox.setValue(saturation)
+
+    def onSaturationSpinBoxChanged(self):
+        saturation = self.saturationSpinBox.value()
+        if saturation != self.saturationSlider.value():
+            self.controller.set_saturation(saturation)
+            self.saturationSlider.setValue(saturation)
+
+    def onGammaSliderChanged(self):
+        gamma = self.gammaSlider.value()
+        if gamma != self.gammaSpinBox.value():
+            self.controller.set_gamma(gamma)
+            self.gammaSpinBox.setValue(gamma)
+
+    def onGammaSpinBoxChanged(self):
+        gamma = self.gammaSpinBox.value()
+        if gamma != self.gammaSlider.value():
+            self.controller.set_gamma(gamma)
+            self.gammaSlider.setValue(gamma)
+
+    def onTriggerSliderChanged(self):
+        trigger = self.triggerSlider.value()
+        if trigger != self.triggerSpinBox.value():
+            self.controller.set_trigger(trigger)
+            self.triggerSpinBox.setValue(trigger)
+
+    def onTriggerSpinBoxChanged(self):
+        trigger = self.triggerSpinBox.value()
+        if trigger != self.triggerSlider.value():
+            self.controller.set_trigger(trigger)
+            self.triggerSlider.setValue(trigger)
+
+    def onTriggerDelaySliderChanged(self):
+        trigger_delay = self.triggerDelaySlider.value()
+        if trigger_delay != self.triggerDelaySpinBox.value():
+            self.controller.set_trigger_delay(trigger_delay)
+            self.triggerDelaySpinBox.setValue(trigger_delay)
+
+    def onTriggerDelaySpinBoxChanged(self):
+        trigger_delay = self.triggerDelaySpinBox.value()
+        if trigger_delay != self.triggerDelaySlider.value():
+            self.controller.set_trigger_delay(trigger_delay)
+            self.triggerDelaySlider.setValue(trigger_delay)
+
+    def onPanSliderChanged(self):
+        pan = self.panSlider.value()
+        if pan != self.panSpinBox.value():
+            self.controller.set_pan(pan)
+            self.panSpinBox.setValue(pan)
+
+    def onPanSpinBoxChanged(self):
+        pan = self.panSpinBox.value()
+        if pan != self.panSlider.value():
+            self.controller.set_pan(pan)
+            self.panSlider.setValue(pan)
+
+    def onTiltSliderChanged(self):
+        tilt = self.tiltSlider.value()
+        if tilt != self.tiltSpinBox.value():
+            self.controller.set_tilt(tilt)
+            self.tiltSpinBox.setValue(tilt)
+
+    def onTiltSpinBoxChanged(self):
+        tilt = self.tiltSpinBox.value()
+        if tilt != self.tiltSlider.value():
+            self.controller.set_tilt(tilt)
+            self.tiltSlider.setValue(tilt)
+
+    def onOpticalFilterSliderChanged(self):
+        optical_filter = self.opticalFilterSlider.value()
+        if optical_filter != self.opticalFilterSpinBox.value():
+            self.controller.set_optical_filter(optical_filter)
+            self.opticalFilterSpinBox.setValue(optical_filter)
+
+    def onOpticalFilterSpinBoxChanged(self):
+        optical_filter = self.opticalFilterSpinBox.value()
+        if optical_filter != self.opticalFilterSlider.value():
+            self.controller.set_optical_filter(optical_filter)
+            self.opticalFilterSlider.setValue(optical_filter)
+
+    def updateScaledPixmap(self):
+        if self.current_pixmap is not None:
+            scaled_pixmap = self.current_pixmap.scaled(
+                self.cameraView.size(),
+                QtCore.Qt.KeepAspectRatio,
+                QtCore.Qt.SmoothTransformation
+            )
+            self.cameraView.setPixmap(scaled_pixmap)
+
+    def resizeEvent(self, event):
+        self.updateScaledPixmap()
+        super().resizeEvent(event)

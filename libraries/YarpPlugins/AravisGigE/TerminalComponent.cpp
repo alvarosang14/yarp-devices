@@ -24,13 +24,13 @@ cameraFeature_id_t AravisGigE::id_find(const std::string &feature_name) {
             return pair.first;
         }
     }
-    return YARP_FEATURE_NUMBER_OF;
+    return YARP_FEATURE_INVALID;
 }
 
 // Verificar que la característica existe y si tiene valor
 bool AravisGigE::checkFeatureExistenceAndGetValue(const std::string &featureName, double &value) {
     cameraFeature_id_t id = id_find(featureName);
-    if (id == YARP_FEATURE_NUMBER_OF) {
+    if (id == YARP_FEATURE_INVALID) {
         std::cout << "Feature not found: " << featureName << "\n";
         return false;
     }
@@ -89,7 +89,7 @@ void AravisGigE::runInteractiveTerminal() {
             }
 
             cameraFeature_id_t id = id_find(tokens[1]);
-            if (id == YARP_FEATURE_NUMBER_OF) {
+            if (id == YARP_FEATURE_INVALID) {
                 std::cout << "Feature not found: " << tokens[1] << "\n";
                 continue;
             }

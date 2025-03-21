@@ -6,135 +6,532 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>541</width>
-    <height>259</height>
+    <width>1075</width>
+    <height>970</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>AravisGigEControllerGUI</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_3">
+  <layout class="QHBoxLayout" name="horizontalLayout_20" stretch="1,2">
    <item>
-    <widget class="QGroupBox" name="imageGroupBox">
+    <widget class="QGroupBox" name="groupBox">
      <property name="title">
-      <string>Image properties</string>
+      <string>Tools</string>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_2">
+     <property name="checkable">
+      <bool>false</bool>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_3">
-        <item>
-         <widget class="QLabel" name="gainLabel">
-          <property name="text">
-           <string>Gain         </string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QSlider" name="gainSlider">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QDoubleSpinBox" name="gainSpinBox"/>
-        </item>
-       </layout>
+       <widget class="QGroupBox" name="imageGroupBox">
+        <property name="title">
+         <string>Image properties</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <layout class="QHBoxLayout" name="brightnessLayout">
+           <item>
+            <widget class="QLabel" name="brightnessLabel">
+             <property name="text">
+              <string>Brightness</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="brightnessSlider">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QDoubleSpinBox" name="brightnessSpinBox"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="shutterLayout">
+           <item>
+            <widget class="QLabel" name="shutterLabel">
+             <property name="text">
+              <string>Shutter</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="shutterSlider">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QDoubleSpinBox" name="shutterSpinBox"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="irisLayout">
+           <item>
+            <widget class="QLabel" name="irisLabel">
+             <property name="text">
+              <string>Iris</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="irisSlider">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QDoubleSpinBox" name="irisSpinBox"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="focusLayout">
+           <item>
+            <widget class="QLabel" name="focusLabel">
+             <property name="text">
+              <string>Focus</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="focusSlider">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QDoubleSpinBox" name="focusSpinBox"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="temperatureLayout">
+           <item>
+            <widget class="QLabel" name="temperatureLabel">
+             <property name="text">
+              <string>Temperature</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="temperatureSlider">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QDoubleSpinBox" name="temperatureSpinBox"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="whiteShadingLayout">
+           <item>
+            <widget class="QLabel" name="whiteShadingLabel">
+             <property name="text">
+              <string>White Shading</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="whiteShadingSlider">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QDoubleSpinBox" name="whiteShadingSpinBox"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="captureSizeLayout">
+           <item>
+            <widget class="QLabel" name="captureSizeLabel">
+             <property name="text">
+              <string>Capture Size</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="captureSizeSlider">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QDoubleSpinBox" name="captureSizeSpinBox"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="captureQualityLayout">
+           <item>
+            <widget class="QLabel" name="captureQualityLabel">
+             <property name="text">
+              <string>Capture Quality</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="captureQualitySlider">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QDoubleSpinBox" name="captureQualitySpinBox"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="mirrorLayout">
+           <item>
+            <widget class="QLabel" name="mirrorLabel">
+             <property name="text">
+              <string>Mirror</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="mirrorSlider">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QDoubleSpinBox" name="mirrorSpinBox"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="exposureLayout">
+           <item>
+            <widget class="QLabel" name="exposureLabel">
+             <property name="text">
+              <string>Exposure</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="exposureSlider">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QDoubleSpinBox" name="exposureSpinBox"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="gainLayout">
+           <item>
+            <widget class="QLabel" name="gainLabel">
+             <property name="text">
+              <string>Gain         </string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="gainSlider">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QDoubleSpinBox" name="gainSpinBox"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="sharpnessLayout" stretch="0,0,0">
+           <item>
+            <widget class="QLabel" name="sharpnessLabel">
+             <property name="text">
+              <string>Sharpness</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="sharpnessSlider">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QDoubleSpinBox" name="sharpnessSpinBox"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="whiteBalanceLayout">
+           <item>
+            <widget class="QLabel" name="whiteBalanceLabel">
+             <property name="text">
+              <string>WhiteBalance</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="whiteBalanceSlider">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QDoubleSpinBox" name="whiteBalanceSpinBox"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="hueLayout">
+           <item>
+            <widget class="QLabel" name="hueLabel">
+             <property name="text">
+              <string>Hue</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="hueSlider">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QDoubleSpinBox" name="hueSpinBox"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="saturationLayout">
+           <item>
+            <widget class="QLabel" name="saturationLabel">
+             <property name="text">
+              <string>Saturation</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="saturationSlider">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QDoubleSpinBox" name="saturationSpinBox"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="gammaLayout">
+           <item>
+            <widget class="QLabel" name="gammaLabel">
+             <property name="text">
+              <string>Gamma</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="gammaSlider">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QDoubleSpinBox" name="gammaSpinBox"/>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_4">
-        <item>
-         <widget class="QLabel" name="exposureLabel">
-          <property name="text">
-           <string>Exposure</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QSlider" name="exposureSlider">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QDoubleSpinBox" name="exposureSpinBox"/>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_5">
-        <item>
-         <widget class="QLabel" name="fpsLabel">
-          <property name="text">
-           <string>FPS           </string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QSlider" name="fpsSlider">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QDoubleSpinBox" name="fpsSpinBox"/>
-        </item>
-       </layout>
+       <widget class="QGroupBox" name="cameraGroupBox">
+        <property name="title">
+         <string>Camera properties</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <item>
+          <layout class="QHBoxLayout" name="triggerLayout">
+           <item>
+            <widget class="QLabel" name="triggerLabel">
+             <property name="text">
+              <string>Trigger</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="triggerSlider">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QDoubleSpinBox" name="triggerSpinBox"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="triggerDelayLayout">
+           <item>
+            <widget class="QLabel" name="triggerDelayLabel">
+             <property name="text">
+              <string>Trigger Delay</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="triggerDelaySlider">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QDoubleSpinBox" name="triggerDelaySpinBox"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="zoomLayout">
+           <item>
+            <widget class="QLabel" name="zoomLabel">
+             <property name="text">
+              <string>Zoom</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="zoomSlider">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QDoubleSpinBox" name="zoomSpinBox"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="panLayout">
+           <item>
+            <widget class="QLabel" name="panLabel">
+             <property name="text">
+              <string>Pan</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="panSlider">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QDoubleSpinBox" name="panSpinBox"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="tiltLayout">
+           <item>
+            <widget class="QLabel" name="tiltLabel">
+             <property name="text">
+              <string>Tilt</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="tiltSlider">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QDoubleSpinBox" name="tiltSpinBox"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="opticalFilterLayout">
+           <item>
+            <widget class="QLabel" name="opticalFilterLabel">
+             <property name="text">
+              <string>Optical Filter</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="opticalFilterSlider">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QDoubleSpinBox" name="opticalFilterSpinBox"/>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="fpsLayout">
+           <item>
+            <widget class="QLabel" name="fpsLabel">
+             <property name="text">
+              <string>FPS           </string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="fpsSlider">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QDoubleSpinBox" name="fpsSpinBox"/>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
       </item>
      </layout>
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="cameraGroupBox">
-     <property name="title">
-      <string>Camera properties</string>
+    <widget class="QLabel" name="cameraView">
+     <property name="text">
+      <string>TextLabel</string>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout">
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout">
-        <item>
-         <widget class="QLabel" name="zoomLabel">
-          <property name="text">
-           <string>Zoom</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QSlider" name="zoomSlider">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QDoubleSpinBox" name="zoomSpinBox"/>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
-        <item>
-         <widget class="QLabel" name="focusLabel">
-          <property name="text">
-           <string>Focus</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QSlider" name="focusSlider">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QDoubleSpinBox" name="focusSpinBox"/>
-        </item>
-       </layout>
-      </item>
-     </layout>
     </widget>
    </item>
   </layout>

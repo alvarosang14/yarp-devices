@@ -14,6 +14,6 @@ setup(name='yarp-devices',
       packages=['GrabberControls2Gui'],
       package_dir={'GrabberControls2Gui': normpath('${CMAKE_SOURCE_DIR}/programs/grabberControls2Gui')},
       package_data={'GrabberControls2Gui': ['templates/*.ui']},
-      install_requires=['begins==0.9','PySide2==5.12.2'],
+      install_requires=['begins==0.9','PySide2==5.15.2'],
       entry_points={'gui_scripts': 'grabbercontrols2gui = GrabberControls2Gui.run:main.start'} # See https://pypi.python.org/pypi/begins/0.8#entry-points
 )
