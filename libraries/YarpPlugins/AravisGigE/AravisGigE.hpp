@@ -45,21 +45,22 @@ public:
     void runInteractiveTerminal();
 
     // ---------- IFrameGrabberControls Declarations. Implementation in IFrameGrabberControlsImpl.cpp ---------
-    bool getCameraDescription(CameraDescriptor * camera) override; // descripcion de la camara.
-    bool hasFeature(int feature, bool * hasFeature) override; // Tiene característica??
-    bool setFeature(int feature, double value) override; // Establece valor
-    bool getFeature(int feature, double * value) override; //Obtiene valor
+    bool getCameraDescription(CameraDescriptor * camera) override;
+    bool hasFeature(int feature, bool * hasFeature) override;
+    bool setFeature(int feature, double value) override;
+    bool getFeature(int feature, double * value) override;
     bool setFeature(int feature, double value1, double value2) override;
     bool getFeature(int feature, double * value1, double * value2) override;
-    bool hasOnOff(int feature, bool * hasOnOff) override; // Se puede activar o desactiavr??
-    bool setActive(int feature, bool onoff) override; // Activamos
-    bool getActive(int feature, bool * isActive) override; // Vemos si activada??
-    bool hasAuto(int feature, bool * hasAuto) override; // Tiene auto ??
-    bool hasManual(int feature, bool * hasManual) override; // Tiene manual ??
-    bool hasOnePush(int feature, bool * hasOnePush) override; // admite ajuste automatico al presionar un boton ??
-    bool setMode(int feature, FeatureMode mode) override; // ponemos automatico o manual
-    bool getMode(int feature, FeatureMode * mode) override; // esta en automatico o manual
-    bool setOnePush(int feature) override; // activamos este modod
+    bool hasOnOff(int feature, bool * hasOnOff) override;
+    bool setActive(int feature, bool onoff) override;
+    bool getActive(int feature, bool * isActive) override;
+    bool hasAuto(int feature, bool * hasAuto) override;
+    bool hasManual(int feature, bool * hasManual) override;
+    bool hasOnePush(int feature, bool * hasOnePush) override;
+    bool setMode(int feature, FeatureMode mode) override; 
+    bool getMode(int feature, FeatureMode * mode) override;
+    bool setOnePush(int feature) override;
+    bool getFeatureLimits(int feature, double *min, double *max);
 
     void listAvailableFeatures();
     bool checkFeatureExistenceAndGetValue(const std::string &featureName, double &value);
@@ -121,6 +122,7 @@ private:
         {YARP_FEATURE_ZOOM, {"Zoom", "ZoomEnabled"}},
         {YARP_FEATURE_PAN, {"Pan", "PanEnabled"}},
         {YARP_FEATURE_TILT, {"Tilt", "TiltEnabled"}},
+        {YARP_FEATURE_SHARPNESS, {"Sharpness", "SharpnessEnabled"}},
         {YARP_FEATURE_OPTICAL_FILTER, {"OpticalFilter", "OpticalFilterEnabled"}},
         {YARP_FEATURE_CAPTURE_SIZE, {"CaptureSize", "CaptureSizeEnabled"}},
         {YARP_FEATURE_CAPTURE_QUALITY, {"CaptureQuality", "CaptureQualityEnabled"}},
@@ -131,7 +133,6 @@ private:
         {YARP_FEATURE_EXPOSURE, {"ExposureTime", "ExposureEnabled"}},
         {YARP_FEATURE_GAIN, {"Gain", "GainEnabled"}},
         {YARP_FEATURE_FRAME_RATE, {"FPS", "FPSEnabled"}},
-        {YARP_FEATURE_SHARPNESS, {"Sharpness", "SharpnessEnabled"}},
         {YARP_FEATURE_WHITE_BALANCE, {"WhiteBalance", "WhiteBalanceEnabled"}},
         {YARP_FEATURE_HUE, {"Hue", "HueEnabled"}},
         {YARP_FEATURE_SATURATION, {"Saturation", "SaturationEnabled"}},
@@ -169,11 +170,3 @@ private:
 } // namespace roboticslab
 
 #endif // __ARAVIS_GIGE_HPP__
-
-/*
-[DEBUG] Requested to set feature 8 (/home/alvaro/repos/yarp-devices/libraries/YarpPlugins/AravisGigE/IFrameGrabberControlsImpl.cpp:54, virtual bool roboticslab::AravisGigE::setFeature(int, double))
-[DEBUG] Requested to set on/off mode for feature 8 (/home/alvaro/repos/yarp-devices/libraries/YarpPlugins/AravisGigE/IFrameGrabberControlsImpl.cpp:176, virtual bool roboticslab::AravisGigE::setActive(int, bool))
-[DEBUG] Checking feature availability:  8 (/home/alvaro/repos/yarp-devices/libraries/YarpPlugins/AravisGigE/IFrameGrabberControlsImpl.cpp:25, virtual bool roboticslab::AravisGigE::hasFeature(int, bool*))
-[INFO] Feature  GainEnabled  set to  ON (/home/alvaro/repos/yarp-devices/libraries/YarpPlugins/AravisGigE/IFrameGrabberControlsImpl.cpp:201, virtual bool roboticslab::AravisGigE::setActive(int, bool))
-
-*/

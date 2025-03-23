@@ -59,7 +59,6 @@ bool AravisGigE::setFeature(int feature, double value)
     if (f < YARP_FEATURE_BRIGHTNESS || f > YARP_FEATURE_NUMBER_OF - 1)
     {
         yCError(ARV) << "Feature not supported by YARP";
-        std::cout << "==========Feature not supported by YARP=============";
         return false;
     }
 
@@ -72,8 +71,7 @@ bool AravisGigE::setFeature(int feature, double value)
 
         if (error) {
             yCError(ARV) << "Error setting feature " << yarp_int_feature->second.featureName << ": " << error->message;
-            std::cout << "==========ErooooorrrrorororENnnnnt=============";
-            g_error_free(error);  // Liberar memoria del error
+            g_error_free(error);
             return false;
         }
     }
@@ -86,8 +84,7 @@ bool AravisGigE::setFeature(int feature, double value)
 
         if (error) {
             yCError(ARV) << "Error setting feature " << yarp_float_feature->second.featureName << ": " << error->message;
-            std::cout << "==========Erooooorrrrororor=============";
-            g_error_free(error);  // Liberar memoria del error
+            g_error_free(error);
             return false;
         }
 
@@ -363,6 +360,55 @@ bool AravisGigE::setOnePush(int feature)
 }
 
 /* ========================================================================================
+============================================ Min/Max =======================================
+========================================================================================== */
+bool AravisGigE::getFeatureLimits(int feature, double *min, double *max)
+{
+    auto f = static_cast<cameraFeature_id_t>(feature);
+
+    if (f < YARP_FEATURE_BRIGHTNESS || f > YARP_FEATURE_NUMBER_OF - 1)
+    {
+        yCError(ARV) << "Feature not supported by YARP";
+        return false;
+    }
+
+    FeatureInfo featureName = 
+        (yarp_arv_int_feature_map.count(f) ? yarp_arv_int_feature_map[f] : 
+        (yarp_arv_float_feat_map.count(f) ? yarp_arv_float_feat_map[f] : FeatureInfo{nullptr}));
+
+    if (featureName.enabledName == nullptr) {
+        return false;
+    }
+
+    if (!arv_device_get_feature(arv_camera_get_device(camera), featureName.featureName)) {
+        yWarning() << "Feature" << featureName.featureName << "not available on this device";
+        return false;
+    }
+
+    // Primero probamos si es INT
+    gint64 min_int = 0, max_int = 0;
+    arv_device_get_integer_feature_bounds(arv_camera_get_device(camera), featureName.featureName, &min_int, &max_int, nullptr);
+    if (min_int != max_int && min_int > std::numeric_limits<gint64>::min() && max_int < std::numeric_limits<gint64>::max()) {
+        *min = static_cast<double>(min_int);
+        *max = static_cast<double>(max_int);
+        return true;
+    }
+
+    // Si no, probamos si es FLOAT
+    gdouble min_float = 0.0, max_float = 0.0;
+    arv_device_get_float_feature_bounds(arv_camera_get_device(camera), featureName.featureName, &min_float, &max_float, nullptr);
+    if (min_float != max_float && min_float > -std::numeric_limits<gdouble>::max() && max_float < std::numeric_limits<gdouble>::max()) {
+        *min = static_cast<double>(min_float);
+        *max = static_cast<double>(max_float);
+        return true;
+    }
+
+    yWarning() << "Could not retrieve valid range for feature" << featureName.featureName;
+    return false;
+}
+
+
+/* ========================================================================================
 ============================================ List =======================================
 ========================================================================================== */
 
@@ -400,20 +446,10 @@ void AravisGigE::listAvailableFeatures()
                 continue;
             }
 
-            gint64 min_int = 0, max_int = 0;
-            arv_device_get_integer_feature_bounds(device, feature.second, &min_int, &max_int, nullptr);
-
-            if (min_int > std::numeric_limits<gint64>::min() && max_int < std::numeric_limits<gint64>::max()) {
-                std::cout << "  -- Range (INT) from " << feature.second << ": " << min_int << " - " << max_int << std::endl;
-                continue;  
-            }
-
-            gdouble min_float = 0, max_float = 0;
-            arv_device_get_float_feature_bounds(device, feature.second, &min_float, &max_float, nullptr);
-
-            if (min_float > -std::numeric_limits<gdouble>::max() && max_float < std::numeric_limits<gdouble>::max()) {
-                std::cout << "  -- Range (FLOAT) from " << feature.second << ": " << min_float << " - " << max_float << std::endl;
-            }
+            double min, max;
+            if (getFeatureLimits(feature.first, &min, &max)) {
+                std::cout << "\t- Range: " << min << " - " << max << std::endl;
+            }            
         }
     }
 }
