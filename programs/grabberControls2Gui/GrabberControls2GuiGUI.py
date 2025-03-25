@@ -13,7 +13,7 @@ import os
 import sys
 import ctypes
 import yarp
-
+import numpy as np
 from PySide2 import QtCore, QtGui, QtWidgets
 from PySide2 import QtUiTools
 
@@ -42,7 +42,7 @@ def load_ui(file_name, where=None):
 
 
 class GrabberControls2GuiGUI(QtWidgets.QWidget):
-    def __init__(self, controller, camera_port, parent=None):
+    def __init__(self, controller, remote_port, parent=None):
         super().__init__(parent)
         self.controller = controller
         self.controller.init()
@@ -50,14 +50,16 @@ class GrabberControls2GuiGUI(QtWidgets.QWidget):
         # Configuración robusta del puerto de imágenes
         self.camera_port = yarp.BufferedPortImageRgb()
 
+        #self.camera_port = yarp.Port()
+        camera_port_name = "/viewer"
+
         # Abrir puerto local (forma correcta)
-        if not self.camera_port.open("/viewer"):
+        if not self.camera_port.open(camera_port_name):
             print("ERROR: No se pudo abrir puerto local")
             return
 
         # Conectar al dispositivo AravisGigE
-        remote_port = f"{camera_port}"
-        print("Puertos disponibles:")
+        print(f"Puertos disponibles: {remote_port}")
         print(yarp.Network.queryName("/grabber"))
         print(yarp.Network.queryName("/grabber/image:o"))
         print(yarp.Network.queryName("/viewer"))
@@ -578,40 +580,47 @@ class GrabberControls2GuiGUI(QtWidgets.QWidget):
 
     def updateCameraView(self):
         try:
-            # Leer imagen (con timeout)
-            yarp_img = self.camera_port.read(False)  # Non-blocking
+            # Leer imagen del puerto YARP (non-blocking)
+            yarp_img = self.camera_port.read(False)
 
             if yarp_img is None:
-                # Verificar estado de conexión
-                #if not yarp.Network.isConnected(self.camera_port.getName(), '/grabber'):
-                    #print("ERROR: Puerto desconectado")
-                print("No imagen")
+                return  # No hay nueva imagen disponible
+
+            # Obtener dimensiones
+            width = yarp_img.width()
+            height = yarp_img.height()
+
+            if width <= 0 or height <= 0:
+                print("Dimensiones de imagen inválidas")
                 return
 
-            # Procesar imagen recibida
-            w, h = yarp_img.width(), yarp_img.height()
-            if w == 0 or h == 0:
-                print("ERROR: Imagen con dimensiones cero")
-                return
+            # Obtener el buffer de datos como bytes
+            img_ptr = yarp_img.getRawImage().__int__()
+            img_size = yarp_img.getRawImageSize()
 
-            # Conversión a QImage
-            img_data = bytes(yarp_img.getRawImage().__int__(), yarp_img.getRawImageSize())
-            qimg = QtGui.QImage(
-                img_data,
-                w, h,
-                yarp_img.getRowSize(),
-                QtGui.QImage.Format_RGB888
+            # Crear bytes usando ctypes (forma correcta)
+            img_data = (ctypes.c_ubyte * img_size).from_address(img_ptr)
+            img_bytes = bytes(img_data)
+
+            # Crear QImage
+            qimage = QtGui.QImage(
+                img_bytes,  # Datos de imagen como bytes
+                width,  # Ancho
+                height,  # Alto
+                yarp_img.getRowSize(),  # Bytes por línea
+                QtGui.QImage.Format_RGB888  # Formato
             )
 
-            if qimg.isNull():
-                print("ERROR: QImage no válida")
+            if qimage.isNull():
+                print("No se pudo crear QImage")
                 return
 
-            self.current_pixmap = QtGui.QPixmap.fromImage(qimg)
+            # Actualizar la visualización
+            self.current_pixmap = QtGui.QPixmap.fromImage(qimage)
             self.updateScaledPixmap()
 
         except Exception as e:
-            print(f"ERROR inesperado: {str(e)}")
+            print(f"Error al procesar imagen: {str(e)}")
 
     def startCameraReading(self):
         """Inicia el streaming forzando la conexión"""
