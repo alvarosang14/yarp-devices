@@ -43,21 +43,34 @@ def load_ui(file_name, where=None):
 
 class GrabberControls2GuiGUI(QtWidgets.QWidget):
     def __init__(self, controller, camera_port, parent=None):
-        """
-        :param controller: instancia de GrabberControls2GuiBackend
-        :param camera_port: puerto YARP (tipo yarp.Port) para leer imágenes (igual que yarpview)
-        """
         super().__init__(parent)
         self.controller = controller
         self.controller.init()
 
-        # Puerto donde leeremos la imagen
-        self.camera_port = camera_port
+        # Configuración robusta del puerto de imágenes
+        self.camera_port = yarp.BufferedPortImageRgb()
 
-        # Estructura YARP para almacenar la imagen al leer
-        self.yarp_img = yarp.ImageRgb()
+        # Abrir puerto local (forma correcta)
+        if not self.camera_port.open("/viewer"):
+            print("ERROR: No se pudo abrir puerto local")
+            return
 
-        # Referencias a widgets de la UI
+        # Conectar al dispositivo AravisGigE
+        remote_port = f"{camera_port}"
+        print("Puertos disponibles:")
+        print(yarp.Network.queryName("/grabber"))
+        print(yarp.Network.queryName("/grabber/image:o"))
+        print(yarp.Network.queryName("/viewer"))
+        if not yarp.Network.connect(remote_port, "/viewer"):
+            print(f"ERROR: No se pudo conectar a {remote_port}")
+
+        # Configuración para mejor rendimiento
+        try:
+            self.camera_port.setStrict(False)  # Lectura no bloqueante
+            self.camera_port.setReadOnly()  # Optimización
+        except:
+            print("ADVERTENCIA: No se pudieron configurar opciones avanzadas")
+
         self.zoomSlider = None
         self.zoomSpinBox = None
         self.focusSlider = None
@@ -106,7 +119,6 @@ class GrabberControls2GuiGUI(QtWidgets.QWidget):
         self.opticalFilterSlider = None
         self.opticalFilterSpinBox = None
 
-        # Referencias a layouts de la UI
         self.zoomLayout = None
         self.focusLayout = None
         self.gainLayout = None
@@ -130,7 +142,6 @@ class GrabberControls2GuiGUI(QtWidgets.QWidget):
         self.panLayout = None
         self.tiltLayout = None
         self.opticalFilterLayout = None
-
         self.current_pixmap = None
         self.cameraView = None
 
@@ -219,7 +230,6 @@ class GrabberControls2GuiGUI(QtWidgets.QWidget):
         self.tiltLayout = self.findChild(QtWidgets.QHBoxLayout, 'tiltLayout')
         self.opticalFilterLayout = self.findChild(QtWidgets.QHBoxLayout, 'opticalFilterLayout')
 
-        # Label donde mostraremos la imagen (en tu .ui debe existir un QLabel con objectName="cameraView")
         self.cameraView = self.findChild(QtWidgets.QLabel, 'cameraView')
         if self.cameraView is not None:
             self.cameraView.setText("Esperando imagen de la cámara...")
@@ -375,15 +385,6 @@ class GrabberControls2GuiGUI(QtWidgets.QWidget):
         self.tiltSpinBox.setValue(self.controller.get_tilt())
         self.opticalFilterSlider.setValue(self.controller.get_optical_filter())
         self.opticalFilterSpinBox.setValue(self.controller.get_optical_filter())
-
-    def startCameraReading(self):
-        """
-        Arranca un temporizador que intentará leer imágenes
-        del puerto camera_port periódicamente (~30fps).
-        """
-        self._timer = QtCore.QTimer(self)
-        self._timer.timeout.connect(self.updateCameraView)
-        self._timer.start(33)
 
     def visibility(self):
         if not self.controller.has_brightness():
@@ -575,29 +576,68 @@ class GrabberControls2GuiGUI(QtWidgets.QWidget):
             self.fpsSpinBox.setEnabled(True)
             self.findChild(QtWidgets.QLabel, 'fpsLabel').setEnabled(True)
 
-
     def updateCameraView(self):
-        if self.camera_port is None or self.cameraView is None:
-            return
+        try:
+            # Leer imagen (con timeout)
+            yarp_img = self.camera_port.read(False)  # Non-blocking
 
-        if self.camera_port.read(self.yarp_img):
-            w = self.yarp_img.width()
-            h = self.yarp_img.height()
-            if w == 0 or h == 0:
+            if yarp_img is None:
+                # Verificar estado de conexión
+                #if not yarp.Network.isConnected(self.camera_port.getName(), '/grabber'):
+                    #print("ERROR: Puerto desconectado")
+                print("No imagen")
                 return
 
-            step = w * 3
-            c_ptr = self.yarp_img.getRawImage().__int__()
-            array_type = ctypes.c_ubyte * (w * h * 3)
-            raw_buffer = array_type.from_address(c_ptr)
-            image_bytes = bytearray(raw_buffer)
+            # Procesar imagen recibida
+            w, h = yarp_img.width(), yarp_img.height()
+            if w == 0 or h == 0:
+                print("ERROR: Imagen con dimensiones cero")
+                return
 
-            qimg = QtGui.QImage(image_bytes, w, h, step, QtGui.QImage.Format_RGB888)
+            # Conversión a QImage
+            img_data = bytes(yarp_img.getRawImage().__int__(), yarp_img.getRawImageSize())
+            qimg = QtGui.QImage(
+                img_data,
+                w, h,
+                yarp_img.getRowSize(),
+                QtGui.QImage.Format_RGB888
+            )
+
+            if qimg.isNull():
+                print("ERROR: QImage no válida")
+                return
+
             self.current_pixmap = QtGui.QPixmap.fromImage(qimg)
-
-            # Aquí llamamos al reescalado automático
             self.updateScaledPixmap()
 
+        except Exception as e:
+            print(f"ERROR inesperado: {str(e)}")
+
+    def startCameraReading(self):
+        """Inicia el streaming forzando la conexión"""
+        # Enviar comando de inicio (si tu dispositivo lo soporta)
+        if hasattr(self.controller, 'start'):
+            self.controller.start()
+
+        # Temporizador para actualización
+        self._timer = QtCore.QTimer(self)
+        self._timer.timeout.connect(self.updateCameraView)
+        self._timer.start(33)  # ~30 fps
+
+    def updateScaledPixmap(self):
+        """Actualiza el pixmap escalado según el tamaño actual del widget"""
+        if self.current_pixmap is not None and self.cameraView is not None:
+            scaled_pixmap = self.current_pixmap.scaled(
+                self.cameraView.size(),
+                QtCore.Qt.KeepAspectRatio,
+                QtCore.Qt.SmoothTransformation
+            )
+            self.cameraView.setPixmap(scaled_pixmap)
+
+    def resizeEvent(self, event):
+        """Maneja el redimensionamiento de la ventana"""
+        self.updateScaledPixmap()
+        super().resizeEvent(event)
     # -------------------------------------------------------------------------
     # Slots de los sliders/spinBoxes -> llaman a métodos de controller (backend)
     # -------------------------------------------------------------------------

@@ -138,8 +138,7 @@ bool AravisGigE::setFeature(int feature, double value1, double value2)
 
 bool AravisGigE::getFeature(int feature, double * value1, double * value2)
 {
-    yCError(ARV) << "No features with 2 values supported!";
-    return false;
+    return getFeatureLimits(feature, value1, value2);
 }
 
 /* ========================================================================================
@@ -385,7 +384,6 @@ bool AravisGigE::getFeatureLimits(int feature, double *min, double *max)
         return false;
     }
 
-    // Primero probamos si es INT
     gint64 min_int = 0, max_int = 0;
     arv_device_get_integer_feature_bounds(arv_camera_get_device(camera), featureName.featureName, &min_int, &max_int, nullptr);
     if (min_int != max_int && min_int > std::numeric_limits<gint64>::min() && max_int < std::numeric_limits<gint64>::max()) {
@@ -394,7 +392,6 @@ bool AravisGigE::getFeatureLimits(int feature, double *min, double *max)
         return true;
     }
 
-    // Si no, probamos si es FLOAT
     gdouble min_float = 0.0, max_float = 0.0;
     arv_device_get_float_feature_bounds(arv_camera_get_device(camera), featureName.featureName, &min_float, &max_float, nullptr);
     if (min_float != max_float && min_float > -std::numeric_limits<gdouble>::max() && max_float < std::numeric_limits<gdouble>::max()) {

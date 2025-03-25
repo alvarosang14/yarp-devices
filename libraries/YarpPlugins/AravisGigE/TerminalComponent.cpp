@@ -8,7 +8,6 @@
 
 using namespace roboticslab;
 
-// Función para dividir la entrada de la terminal en tokens
 void get_command(const std::string &command, std::vector<std::string> &tokens) {
     std::stringstream ss(command);
     std::string token;
@@ -17,7 +16,6 @@ void get_command(const std::string &command, std::vector<std::string> &tokens) {
     }
 }
 
-// Función que obtiene el ID de la característica dado su nombre
 cameraFeature_id_t AravisGigE::id_find(const std::string &feature_name) {
     for (const auto &pair : feature_names) {
         if (pair.second == feature_name) {
@@ -27,7 +25,6 @@ cameraFeature_id_t AravisGigE::id_find(const std::string &feature_name) {
     return YARP_FEATURE_INVALID;
 }
 
-// Verificar que la característica existe y si tiene valor
 bool AravisGigE::checkFeatureExistenceAndGetValue(const std::string &featureName, double &value) {
     cameraFeature_id_t id = id_find(featureName);
     if (id == YARP_FEATURE_INVALID) {
@@ -38,7 +35,6 @@ bool AravisGigE::checkFeatureExistenceAndGetValue(const std::string &featureName
     return getFeature(id, &value);
 }
 
-// Ejecutar el modo interactivo para la terminal
 void AravisGigE::runInteractiveTerminal() {
     std::string command;
     while (true) {
