@@ -6,23 +6,30 @@
 
 using namespace roboticslab;
 
-bool AravisGigE::getCameraDescription(CameraDescriptor * camera)
-{
-    if (arv_camera_is_uv_device(this->camera))
-    {
-        camera->busType = BUS_USB;
+// Helper function to get feature info
+const FeatureInfo* AravisGigE::getFeatureInfo(cameraFeature_id_t feature) {
+    if (yarp_arv_int_feature_map.count(feature)) {
+        return &yarp_arv_int_feature_map.at(feature);
+    } else if (yarp_arv_float_feat_map.count(feature)) {
+        return &yarp_arv_float_feat_map.at(feature);
     }
-    else
-    {
-        camera->busType = BUS_UNKNOWN; //-- Temporary until we add a BUS_GIGE in YARP
+    return nullptr;
+}
+
+bool AravisGigE::getCameraDescription(CameraDescriptor * camera) {
+    if (arv_camera_is_uv_device(this->camera)) {
+        camera->busType = BUS_USB;
+    } else {
+        camera->busType = BUS_UNKNOWN;
     }
 
-    camera->deviceDescription = std::string(arv_camera_get_device_id(this->camera, nullptr)) + ": " + arv_camera_get_model_name(this->camera, nullptr);
+    camera->deviceDescription = std::string(arv_camera_get_device_id(this->camera, nullptr)) + ": " + 
+                               arv_camera_get_model_name(this->camera, nullptr);
     return true;
 }
 
 bool AravisGigE::hasFeature(int feature, bool * hasFeature) {
-    yCDebug(ARV) << "Checking feature availability: " << feature;
+    yCDebug(ARV) << "Checking feature availability:" << feature;
 
     auto f = static_cast<cameraFeature_id_t>(feature);
 
@@ -31,422 +38,519 @@ bool AravisGigE::hasFeature(int feature, bool * hasFeature) {
         return false;
     }
 
-    //-- Check if device supports this feature
-    ArvDevice *device = arv_camera_get_device(camera);
-    const char *feature_name = feature_names.count(f) ?
-                                feature_names[f] : nullptr;
-
-    if (feature_name && arv_device_get_feature(device, feature_name)) {
-        *hasFeature = true;
-    } else {
+    const FeatureInfo* info = getFeatureInfo(f);
+    if (!info || !info->featureName) {
         *hasFeature = false;
-        yCWarning(ARV) << "Feature" << feature << "not found in camera";
+        return true;
+    }
+
+    ArvDevice *device = arv_camera_get_device(camera);
+    if (!device) {
+        yCError(ARV) << "Camera device not available";
+        return false;
+    }
+
+    *hasFeature = (arv_device_get_feature(device, info->featureName) != nullptr);
+    if (!*hasFeature) {
+        yCWarning(ARV) << "Feature" << info->featureName << "not found in camera";
+    }
+
+    bool compatible;
+    checkFeatureCompatibility(f, &compatible);
+    if (!compatible){
+        yCWarning(ARV) << "Feature" << info->featureName << "not in camera but not compatible for pixelFormat.";
+        *hasFeature = false;
     }
 
     return true;
 }
 
-/* ========================================================================================
-============================================ Set =======================================
-========================================================================================== */
-bool AravisGigE::setFeature(int feature, double value)
-{
-    yCDebug(ARV) << "Requested to set feature" << feature;
-
-    //-- Check if YARP supports this feature
+/* ============================================
+ * Set Feature Implementation
+ * ============================================ */
+bool AravisGigE::setFeature(int feature, double value) {
     auto f = static_cast<cameraFeature_id_t>(feature);
-
-    if (f < YARP_FEATURE_BRIGHTNESS || f > YARP_FEATURE_NUMBER_OF - 1)
-    {
-        yCError(ARV) << "Feature not supported by YARP";
+    const FeatureInfo* info = getFeatureInfo(f);
+    
+    // Basic verifications
+    if (!info || !info->featureName) {
+        yCError(ARV) << "Feature" << feature << "not supported";
         return false;
     }
 
-    if (auto yarp_int_feature = yarp_arv_int_feature_map.find(f); yarp_int_feature != yarp_arv_int_feature_map.end())
-    {
-        //-- Check {here} that value is within range here (when you can inspect ranges)
-        setActive(yarp_int_feature->first, true);
-        GError *error = nullptr;
-        arv_device_set_integer_feature_value(arv_camera_get_device(camera), yarp_int_feature->second.featureName, value, &error);
+    yCDebug(ARV) << "Setting feature" << info->featureName << "to value" << value;
 
-        if (error) {
-            yCError(ARV) << "Error setting feature " << yarp_int_feature->second.featureName << ": " << error->message;
-            g_error_free(error);
+    // 1. Check feature compatibility with current pixel format
+    bool compatible;
+    if (!checkFeatureCompatibility(f, &compatible)) {
+        return false;
+    }
+    
+    if (!compatible) {
+        yCError(ARV) << "Feature" << info->featureName << "not compatible with current pixel format";
+        return false;
+    }
+
+    // 2. Check if feature is in auto mode
+    if (info->autoName) {
+        FeatureMode currentMode;
+        if (getMode(f, &currentMode) && currentMode == MODE_AUTO) {
+            yCWarning(ARV) << "Feature" << info->featureName << "is in auto mode, manual change ignored";
             return false;
         }
     }
-    else if (auto yarp_float_feature = yarp_arv_float_feat_map.find(f); yarp_float_feature != yarp_arv_float_feat_map.end())
-    {
-        //-- Check {here} that value is within range here (when you can inspect ranges)
-        setActive(yarp_float_feature->first, true);
-        GError *error = nullptr;
-        arv_device_set_float_feature_value(arv_camera_get_device(camera), yarp_float_feature->second.featureName, value, &error);
 
-        if (error) {
-            yCError(ARV) << "Error setting feature " << yarp_float_feature->second.featureName << ": " << error->message;
-            g_error_free(error);
+    // 3. Activate feature if disabled
+    bool hasauto = false;
+    hasAuto(f, &hasauto);
+    if (info->enabledName && !hasauto) {
+        bool isActive;
+        if (!getActive(f, &isActive)) {
             return false;
         }
-
-
+        
+        if (!isActive) {
+            yCInfo(ARV) << "Auto-enabling feature" << info->featureName;
+            if (!setActive(f, true)) {
+                yCError(ARV) << "Failed to enable feature" << info->featureName;
+                return false;
+            }
+        }
     }
-    else
-    {
-        yCError(ARV) << "Property with yarp id" << f << "not available";
+
+    // 4. Set the value
+    ArvDevice* device = arv_camera_get_device(camera);
+    GError* error = nullptr;
+    
+    if (yarp_arv_int_feature_map.count(f)) {
+        arv_device_set_integer_feature_value(device, info->featureName, static_cast<gint64>(value), &error);
+    } else if (yarp_arv_float_feat_map.count(f)) {
+        arv_device_set_float_feature_value(device, info->featureName, static_cast<gdouble>(value), &error);
+    } else {
+        yCError(ARV) << "Feature type not recognized";
+        return false;
+    }
+
+    if (error) {
+        yCError(ARV) << "Error setting feature" << info->featureName << ":" << error->message;
+        g_error_free(error);
         return false;
     }
 
     return true;
 }
 
-bool AravisGigE::getFeature(int feature, double * value)
-{
-    yCDebug(ARV) << "Property with yarp id" << feature << "requested";
+bool AravisGigE::getFeature(int feature, double * value) {
+    yCDebug(ARV) << "Getting value for feature" << feature;
 
-    //-- Check if YARP supports this feature
     auto f = static_cast<cameraFeature_id_t>(feature);
-
-    if (f < YARP_FEATURE_BRIGHTNESS || f > YARP_FEATURE_NUMBER_OF - 1)
-    {
-        yCError(ARV) << "Feature not supported by YARP";
+    const FeatureInfo* info = getFeatureInfo(f);
+    
+    if (!info || !info->featureName) {
+        yCError(ARV) << "Feature" << feature << "not supported";
         return false;
     }
 
-    if (auto yarp_int_feature = yarp_arv_int_feature_map.find(f); yarp_int_feature != yarp_arv_int_feature_map.end())
-    {
-        *value = arv_device_get_integer_feature_value(arv_camera_get_device(camera), yarp_int_feature->second.featureName, nullptr);
-    }
-    else if (auto yarp_float_feature = yarp_arv_float_feat_map.find(f); yarp_float_feature != yarp_arv_float_feat_map.end())
-    {
-        *value = arv_device_get_float_feature_value(arv_camera_get_device(camera), yarp_float_feature->second.featureName, nullptr);
-    }
-    else
-    {
-        yCError(ARV) << "Property with yarp id" << f << "not available";
+    ArvDevice* device = arv_camera_get_device(camera);
+    if (!device) {
+        yCError(ARV) << "Camera device not available";
         return false;
     }
 
-    yCDebug(ARV) << "Value:" << *value;
+    GError* error = nullptr;
+    if (yarp_arv_int_feature_map.count(f)) {
+        *value = arv_device_get_integer_feature_value(device, info->featureName, &error);
+    } else if (yarp_arv_float_feat_map.count(f)) {
+        *value = arv_device_get_float_feature_value(device, info->featureName, &error);
+    } else {
+        yCError(ARV) << "Feature type not recognized";
+        return false;
+    }
+
+    if (error) {
+        yCError(ARV) << "Error getting feature" << info->featureName << ":" << error->message;
+        g_error_free(error);
+        return false;
+    }
+
+    yCDebug(ARV) << "Feature" << info->featureName << "value:" << *value;
     return true;
 }
 
-bool AravisGigE::setFeature(int feature, double value1, double value2)
-{
+bool AravisGigE::setFeature(int feature, double value1, double value2) {
     yCError(ARV) << "No features with 2 values supported!";
     return false;
 }
 
-bool AravisGigE::getFeature(int feature, double * value1, double * value2)
-{
+bool AravisGigE::getFeature(int feature, double * value1, double * value2) {
     return getFeatureLimits(feature, value1, value2);
 }
 
-/* ========================================================================================
-============================================ On/Off =======================================
-========================================================================================== */
-
-bool AravisGigE::hasOnOff(int feature, bool * hasOnOff)
-{
-    yCDebug(ARV) << "Request to know if feature" << feature << "has on/off mode";
-
-    //-- Check if YARP supports this feature
+/* ============================================
+ * On/Off Feature Implementation
+ * ============================================ */
+bool AravisGigE::hasOnOff(int feature, bool * hasOnOff) {
     auto f = static_cast<cameraFeature_id_t>(feature);
-
-    if (f < YARP_FEATURE_BRIGHTNESS || f > YARP_FEATURE_NUMBER_OF - 1)
-    {
-        yCError(ARV) << "Feature not supported by YARP";
+    const FeatureInfo* info = getFeatureInfo(f);
+    
+    if (!info) {
+        yCError(ARV) << "Feature" << feature << "not supported";
         return false;
     }
 
-    //-- Check if device supports this feature and if it is a binary on/off type
-    const char* feature_name = feature_names.count(f) ? feature_names[f] : nullptr;
-
-    if (feature_name) {
-        // Check if the feature is a boolean or on/off feature
-        if (arv_device_get_feature(arv_camera_get_device(camera), feature_name)) {
-            // This might require querying a property or checking the feature value.
-            *hasOnOff = true;
-            return true;
-        }
-    }
-
-    //-- If no on/off support, return false
-    *hasOnOff = false;
+    *hasOnOff = (info->enabledName != nullptr);
     return true;
 }
 
-bool AravisGigE::setActive(int feature, bool onoff)
-{
-    yCDebug(ARV) << "Requested to set on/off mode for feature" << feature;
-
-    //-- Check if YARP supports this feature
+bool AravisGigE::setActive(int feature, bool onoff) {
     auto f = static_cast<cameraFeature_id_t>(feature);
-
-    if (f < YARP_FEATURE_BRIGHTNESS || f > YARP_FEATURE_NUMBER_OF - 1)
-    {
-        yCError(ARV) << "Feature not supported by YARP";
+    const FeatureInfo* info = getFeatureInfo(f);
+    
+    if (!info || !info->enabledName) {
+        yCError(ARV) << "Feature" << feature << "does not support on/off";
         return false;
     }
 
-    bool hasOnOffFlag = false;
-    if (!hasFeature(f, &hasOnOffFlag) || !hasOnOffFlag) {
-        yCError(ARV) << "Feature is not available or does not support on/off mode";
+    yCDebug(ARV) << "Setting feature" << info->featureName << (onoff ? "ON" : "OFF");
+
+    ArvDevice* device = arv_camera_get_device(camera);
+    if (!device) {
+        yCError(ARV) << "Camera device not available";
         return false;
     }
 
-    FeatureInfo feature_name = 
-        (yarp_arv_int_feature_map.count(f) ? yarp_arv_int_feature_map[f] : 
-        (yarp_arv_float_feat_map.count(f) ? yarp_arv_float_feat_map[f] : FeatureInfo{nullptr}));
-
-    if (feature_name.featureName != nullptr) {
-        int current_value = arv_device_get_integer_feature_value(arv_camera_get_device(camera), feature_name.enabledName, nullptr);
-        if (current_value != (onoff ? 1 : 0)) {
-            arv_device_set_boolean_feature_value(arv_camera_get_device(camera), feature_name.enabledName, true, nullptr);
-            yCInfo(ARV) << "Feature " << feature_name.enabledName << " set to " << (onoff ? "ON" : "OFF");
-            return true;
-        } else {
-            yCWarning(ARV) << "Feature " << feature_name.enabledName << " is already in the requested state.";
-            return true;
-        }
+    GError* error = nullptr;
+    arv_device_set_boolean_feature_value(device, info->enabledName, onoff, &error);
+    
+    if (error) {
+        yCError(ARV) << "Error setting on/off for" << info->featureName << ":" << error->message;
+        g_error_free(error);
+        return false;
     }
 
-    yCError(ARV) << "Feature " << feature << " could not be set to on/off mode.";
-    return false;
+    return true;
 }
 
-
-bool AravisGigE::getActive(int feature, bool * isActive)
-{
-    yCDebug(ARV) << "Requested to get on/off mode for feature" << feature;
-
-    //-- Check if YARP supports this feature
+bool AravisGigE::getActive(int feature, bool * isActive) {
     auto f = static_cast<cameraFeature_id_t>(feature);
-
-    if (f < YARP_FEATURE_BRIGHTNESS || f > YARP_FEATURE_NUMBER_OF - 1)
-    {
-        yCError(ARV) << "Feature not supported by YARP";
+    const FeatureInfo* info = getFeatureInfo(f);
+    
+    if (!info || !info->enabledName) {
+        yCError(ARV) << "Feature" << feature << "does not support on/off";
         return false;
     }
 
-    bool hasOnOffFlag = false;
-    if (!hasFeature(f, &hasOnOffFlag) || !hasOnOffFlag) {
-        yCError(ARV) << "Feature is not available or does not support on/off mode";
+    ArvDevice* device = arv_camera_get_device(camera);
+    if (!device) {
+        yCError(ARV) << "Camera device not available";
         return false;
     }
 
-    FeatureInfo feature_name = 
-        (yarp_arv_int_feature_map.count(f) ? yarp_arv_int_feature_map[f] : 
-        (yarp_arv_float_feat_map.count(f) ? yarp_arv_float_feat_map[f] : FeatureInfo{nullptr}));
+    GError* error = nullptr;
+    *isActive = arv_device_get_boolean_feature_value(device, info->enabledName, &error);
+    
+    if (error) {
+        yCError(ARV) << "Error getting on/off for" << info->featureName << ":" << error->message;
+        g_error_free(error);
+        return false;
+    }
 
-    if (feature_name.featureName != nullptr) {
-        int current_value = arv_device_get_integer_feature_value(arv_camera_get_device(camera), feature_name.enabledName, nullptr);
-        *isActive = (current_value > 0);
-        yCInfo(ARV) << "Feature " << feature_name.enabledName << " is " << (*isActive ? "ON" : "OFF");
+    yCDebug(ARV) << "Feature" << info->featureName << "is" << (*isActive ? "ON" : "OFF");
+    return true;
+}
+
+/* ============================================
+ * Auto/Manual Mode Implementation
+ * ============================================ */
+bool AravisGigE::hasAuto(int feature, bool* hasAuto) {
+    auto f = static_cast<cameraFeature_id_t>(feature);
+    const FeatureInfo* info = getFeatureInfo(f);
+    
+    if (!info) {
+        yCError(ARV) << "Feature" << feature << "not supported";
+        return false;
+    }
+
+    *hasAuto = (info->autoName != nullptr);
+    return true;
+}
+
+bool AravisGigE::hasManual(int feature, bool* hasManual) {
+    // All numeric features support manual mode by default
+    auto f = static_cast<cameraFeature_id_t>(feature);
+    *hasManual = (yarp_arv_int_feature_map.count(f) || yarp_arv_float_feat_map.count(f));
+    return true;
+}
+
+bool AravisGigE::hasOnePush(int feature, bool* hasOnePush) {
+    auto f = static_cast<cameraFeature_id_t>(feature);
+    const FeatureInfo* info = getFeatureInfo(f);
+    
+    if (!info) {
+        yCError(ARV) << "Feature" << feature << "not supported";
+        return false;
+    }
+
+    *hasOnePush = info->supportsOnePush;
+    return true;
+}
+
+bool AravisGigE::setMode(int feature, FeatureMode mode) {
+    auto f = static_cast<cameraFeature_id_t>(feature);
+    const FeatureInfo* info = getFeatureInfo(f);
+    
+    if (!info || !info->autoName) {
+        yCError(ARV) << "Feature" << feature << "does not support auto modes";
+        return false;
+    }
+
+    yCDebug(ARV) << "Setting mode" << mode << "for feature" << info->featureName;
+
+    ArvDevice* device = arv_camera_get_device(camera);
+    if (!device) {
+        yCError(ARV) << "Camera device not available";
+        return false;
+    }
+
+    const char* mode_str = nullptr;
+    switch (mode) {
+        case MODE_AUTO:     mode_str = "Continuous"; break;
+        case MODE_MANUAL:   mode_str = "Off"; break;
+        default:
+            yCError(ARV) << "Invalid mode specified";
+            return false;
+    }
+
+    GError* error = nullptr;
+    arv_device_set_string_feature_value(device, info->autoName, mode_str, &error);
+    
+    if (error) {
+        yCError(ARV) << "Failed to set mode for" << info->featureName << ":" << error->message;
+        g_error_free(error);
+        return false;
+    }
+
+    return true;
+}
+
+bool AravisGigE::getMode(int feature, FeatureMode* mode) {
+    auto f = static_cast<cameraFeature_id_t>(feature);
+    const FeatureInfo* info = getFeatureInfo(f);
+    
+    if (!info) {
+        yCError(ARV) << "Feature" << feature << "not supported";
+        return false;
+    }
+
+    // If no auto mode, it's manual by default
+    if (!info->autoName) {
+        *mode = MODE_MANUAL;
         return true;
     }
 
-    yCError(ARV) << "Feature " << feature << " could not be read.";
-    return false;
+    ArvDevice* device = arv_camera_get_device(camera);
+    if (!device) {
+        yCError(ARV) << "Camera device not available";
+        return false;
+    }
+
+    GError* error = nullptr;
+    const char* current_mode = arv_device_get_string_feature_value(device, info->autoName, &error);
+    
+    if (error) {
+        yCError(ARV) << "Failed to get mode for" << info->featureName << ":" << error->message;
+        g_error_free(error);
+        return false;
+    }
+
+    if (!current_mode) {
+        *mode = MODE_MANUAL;
+        return true;
+    }
+
+    if (strcmp(current_mode, "Continuous") == 0) {
+        *mode = MODE_AUTO;
+    } else if (strcmp(current_mode, "Once") == 0) {
+        *mode = MODE_AUTO;
+    } else if (strcmp(current_mode, "Off") == 0) {
+        *mode = MODE_MANUAL;
+    } else {
+        *mode = MODE_UNKNOWN;
+    }
+
+    return true;
 }
 
-/* =======================================================================================================================================
-============================================ Auto (sin terminar porque de momneto no es necesario) =======================================
-========================================================================================================================================== */
+bool AravisGigE::setOnePush(int feature) {
+    if (!setMode(feature, MODE_AUTO)) {
+        return false;
+    }
+    return setMode(feature, MODE_MANUAL);
+}
 
-bool AravisGigE::hasAuto(int feature, bool * hasAuto)
-{
-    yCDebug(ARV) << "Request to know if feature" << feature << "has auto mode";
+/* ============================================
+ * Feature Compatibility Check
+ * ============================================ */
+bool AravisGigE::checkFeatureCompatibility(cameraFeature_id_t feature, bool* compatible) {
+    const FeatureInfo* info = getFeatureInfo(feature);
+    if (!info) {
+        *compatible = false;
+        return true;
+    }
 
-    //-- Check if YARP supports this feature
+    // Get current pixel format
+    GError* error = nullptr;
+    const char* pixelFormat = arv_device_get_string_feature_value(arv_camera_get_device(camera), "PixelFormat", &error);
+    
+    if (error) {
+        yCError(ARV) << "Failed to get pixel format:" << error->message;
+        g_error_free(error);
+        return false;
+    }
+
+    if (!pixelFormat) {
+        yCError(ARV) << "Pixel format not available";
+        return false;
+    }
+
+    // Determine format type
+    bool isRaw = (strstr(pixelFormat, "Bayer") != nullptr);
+    bool isColor = (strstr(pixelFormat, "RGB") != nullptr || 
+                   strstr(pixelFormat, "BGR") != nullptr ||
+                   strstr(pixelFormat, "YUV") != nullptr);
+    bool isMono = (strstr(pixelFormat, "Mono") != nullptr);
+
+    // Check compatibility
+    switch (info->compatibility) {
+        case COMPAT_RAW:    *compatible = isRaw; break;
+        case COMPAT_COLOR:  *compatible = isColor; break;
+        case COMPAT_MONO:   *compatible = isMono; break;
+        case COMPAT_ALL:    *compatible = true; break;
+        case COMPAT_NON_RAW:*compatible = !isRaw; break;
+    }
+
+    return true;
+}
+
+/* ============================================
+ * Feature Limits Implementation
+ * ============================================ */
+bool AravisGigE::getFeatureLimits(int feature, double *min, double *max) {
     auto f = static_cast<cameraFeature_id_t>(feature);
-
-    if (f < YARP_FEATURE_BRIGHTNESS || f > YARP_FEATURE_NUMBER_OF - 1)
-    {
-        yCError(ARV) << "Feature not supported by YARP";
+    const FeatureInfo* info = getFeatureInfo(f);
+    
+    if (!info || !info->featureName) {
+        yCError(ARV) << "Feature" << feature << "not supported";
         return false;
     }
 
-    //-- Check if device supports this feature
-    //-- (No feature supports auto mode currently. If any did, the code to discover that would go here)
-    *hasAuto = false;
-    return true;
-}
-
-bool AravisGigE::hasManual(int feature, bool * hasManual)
-{
-    yCDebug(ARV) << "Request to know if feature" << feature << "has manual mode";
-
-    //-- Check if YARP supports this feature
-    auto f = static_cast<cameraFeature_id_t>(feature);
-
-    if (f < YARP_FEATURE_BRIGHTNESS || f > YARP_FEATURE_NUMBER_OF - 1)
-    {
-        yCError(ARV) << "Feature not supported by YARP";
+    ArvDevice* device = arv_camera_get_device(camera);
+    if (!device) {
+        yCError(ARV) << "Camera device not available";
         return false;
     }
 
-    //-- Check if device supports this feature
-    //-- (No feature supports manual mode currently. If any did, the code to discover that would go here)
-    *hasManual = false;
-    return true;
-}
-
-bool AravisGigE::hasOnePush(int feature, bool * hasOnePush)
-{
-    yCDebug(ARV) << "Request to know if feature" << feature << "has one push mode";
-
-    //-- Check if YARP supports this feature
-    auto f = static_cast<cameraFeature_id_t>(feature);
-
-    if (f < YARP_FEATURE_BRIGHTNESS || f > YARP_FEATURE_NUMBER_OF - 1)
-    {
-        yCError(ARV) << "Feature not supported by YARP";
+    if (!arv_device_get_feature(device, info->featureName)) {
+        yCWarning(ARV) << "Feature" << info->featureName << "not available on this device";
         return false;
     }
 
-    //-- Check if device supports this feature
-    //-- (No feature supports one push mode currently. If any did, the code to discover that would go here)
-    *hasOnePush = false;
-    return true;
-}
-
-bool AravisGigE::setMode(int feature, FeatureMode mode)
-{
-    yCDebug(ARV) << "Requested to set auto/manual mode for feature" << feature;
-
-    if (bool b; !hasFeature(feature, &b) || !b || (!hasAuto(feature, &b) || !b) && (!hasManual(feature, &b) || !b))
-    {
-        yCError(ARV) << "Feature is not available or does not support auto/manual mode";
-        return false;
-    }
-
-    //-- Check if device supports this feature
-    //-- (No feature supports auto/manual mode currently. If any did, the code to discover that would go here)
-    return true;
-}
-
-bool AravisGigE::getMode(int feature, FeatureMode * mode)
-{
-    yCDebug(ARV) << "Requested to get auto/manual mode for feature" << feature;
-
-    if (bool b; !hasFeature(feature, &b) || !b || (!hasAuto(feature, &b) || !b) && (!hasManual(feature, &b) || !b))
-    {
-        yCError(ARV) << "Feature is not available or does not support auto/manual mode";
-        return false;
-    }
-
-    //-- Check if device supports this feature
-    //-- (No feature supports auto/manual mode currently. If any did, the code to discover that would go here)
-    *mode = MODE_UNKNOWN;
-
-    return true;
-}
-
-
-bool AravisGigE::setOnePush(int feature)
-{
-    yCDebug(ARV) << "Requested to set one push mode for feature" << feature;
-
-    if (bool b; !hasFeature(feature, &b) || !b || !hasOnePush(feature, &b) || !b)
-    {
-        yCError(ARV) << "Feature is not available or does not support one push mode";
-        return false;
-    }
-
-    //-- Check if device supports this feature
-    //-- (No feature supports one push mode currently. If any did, the code to discover that would go here)
-    return true;
-}
-
-/* ========================================================================================
-============================================ Min/Max =======================================
-========================================================================================== */
-bool AravisGigE::getFeatureLimits(int feature, double *min, double *max)
-{
-    auto f = static_cast<cameraFeature_id_t>(feature);
-
-    if (f < YARP_FEATURE_BRIGHTNESS || f > YARP_FEATURE_NUMBER_OF - 1)
-    {
-        yCError(ARV) << "Feature not supported by YARP";
-        return false;
-    }
-
-    FeatureInfo featureName = 
-        (yarp_arv_int_feature_map.count(f) ? yarp_arv_int_feature_map[f] : 
-        (yarp_arv_float_feat_map.count(f) ? yarp_arv_float_feat_map[f] : FeatureInfo{nullptr}));
-
-    if (featureName.enabledName == nullptr) {
-        return false;
-    }
-
-    if (!arv_device_get_feature(arv_camera_get_device(camera), featureName.featureName)) {
-        yWarning() << "Feature" << featureName.featureName << "not available on this device";
-        return false;
-    }
-
+    GError* error = nullptr;
+    
+    // Try integer bounds first
     gint64 min_int = 0, max_int = 0;
-    arv_device_get_integer_feature_bounds(arv_camera_get_device(camera), featureName.featureName, &min_int, &max_int, nullptr);
-    if (min_int != max_int && min_int > std::numeric_limits<gint64>::min() && max_int < std::numeric_limits<gint64>::max()) {
+    arv_device_get_integer_feature_bounds(device, info->featureName, &min_int, &max_int, &error);
+    
+    if (!error && min_int != max_int) {
         *min = static_cast<double>(min_int);
         *max = static_cast<double>(max_int);
         return true;
     }
+    
+    if (error) {
+        g_error_free(error);
+        error = nullptr;
+    }
 
+    // Try float bounds if integer failed
     gdouble min_float = 0.0, max_float = 0.0;
-    arv_device_get_float_feature_bounds(arv_camera_get_device(camera), featureName.featureName, &min_float, &max_float, nullptr);
-    if (min_float != max_float && min_float > -std::numeric_limits<gdouble>::max() && max_float < std::numeric_limits<gdouble>::max()) {
+    arv_device_get_float_feature_bounds(device, info->featureName, &min_float, &max_float, &error);
+    
+    if (!error && min_float != max_float) {
         *min = static_cast<double>(min_float);
         *max = static_cast<double>(max_float);
         return true;
     }
+    
+    if (error) {
+        yCError(ARV) << "Error getting bounds for" << info->featureName << ":" << error->message;
+        g_error_free(error);
+    }
 
-    yWarning() << "Could not retrieve valid range for feature" << featureName.featureName;
+    yCWarning(ARV) << "Could not retrieve valid range for feature" << info->featureName;
     return false;
 }
 
-
-/* ========================================================================================
-============================================ List =======================================
-========================================================================================== */
-
-void AravisGigE::listAvailableFeatures()
-{
+/* ============================================
+ * Feature Listing Implementation
+ * ============================================ */
+void AravisGigE::listAvailableFeatures() {
     std::cout << "Listing available features:\n";
 
-    ArvDevice *device = arv_camera_get_device(camera);
+    for (const auto& entry : yarp_arv_int_feature_map) {
+        printFeatureInfo(entry.first, entry.second);
+    }
 
-    for (const auto &feature : feature_names)
-    {
-        bool available = false;
-        if (hasFeature(feature.first, &available) && available) {
-            FeatureMode mode = MODE_UNKNOWN;
-            bool modeSuccess = getMode(feature.first, &mode);
+    for (const auto& entry : yarp_arv_float_feat_map) {
+        printFeatureInfo(entry.first, entry.second);
+    }
+}
 
-            bool isActive = false;
-            bool activeSuccess = getActive(feature.first, &isActive);
+void AravisGigE::printFeatureInfo(cameraFeature_id_t featureId, const FeatureInfo& info) {
+    bool available = false;
+    if (!hasFeature(featureId, &available) || !available) {
+        return;
+    }
 
-            bool onOff = false;
-            bool onOffSuccess = hasOnOff(feature.first, &onOff);
-
-            double value = 0.0;
-            bool valueSuccess = getFeature(feature.first, &value);
-
-            std::cout << "- " << feature.second << " (ID " << feature.first << ") is available. "
-                    << "Mode: " << (modeSuccess ? std::to_string(mode) : "No mode") << ". "
-                    << "IsActive: " << (activeSuccess ? (isActive ? "ON" : "OFF") : "No active") << ". "
-                    << "Has On/Off: " << (onOffSuccess ? (onOff ? "Yes" : "No") : "No on/off") << ". "
-                    << "Value: " << (valueSuccess ? std::to_string(value) : "No value") << "\n";
-
-
-            if (!arv_device_get_feature(device, feature.second)) {
-                std::cout << "  -- " << feature.second << " No soported range values." << std::endl;
-                continue;
+    std::cout << "- " << info.featureName << " (ID " << featureId << "):\n";
+    
+    // Print mode information if available
+    if (info.autoName) {
+        FeatureMode mode;
+        if (getMode(featureId, &mode)) {
+            std::cout << "  Mode: ";
+            switch (mode) {
+                case MODE_AUTO: std::cout << "Auto"; break;
+                case MODE_MANUAL: std::cout << "Manual"; break;
+                default: std::cout << "Unknown";
             }
-
-            double min, max;
-            if (getFeatureLimits(feature.first, &min, &max)) {
-                std::cout << "\t- Range: " << min << " - " << max << std::endl;
-            }            
+            std::cout << "\n";
         }
+    }
+
+    // Print active status if available
+    if (info.enabledName) {
+        bool isActive;
+        if (getActive(featureId, &isActive)) {
+            std::cout << "  Status: " << (isActive ? "Enabled" : "Disabled") << "\n";
+        }
+    }
+
+    // Print current value
+    double value;
+    if (getFeature(featureId, &value)) {
+        std::cout << "  Current value: " << value << "\n";
+    }
+
+    // Print limits
+    double min, max;
+    if (getFeatureLimits(featureId, &min, &max)) {
+        std::cout << "  Range: " << min << " to " << max << "\n";
+    }
+
+    // Print compatibility
+    bool compatible;
+    if (checkFeatureCompatibility(featureId, &compatible)) {
+        std::cout << "  Compatible with current format: " << (compatible ? "Yes" : "No") << "\n";
     }
 }

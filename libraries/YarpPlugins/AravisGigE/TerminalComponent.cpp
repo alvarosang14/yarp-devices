@@ -17,11 +17,18 @@ void get_command(const std::string &command, std::vector<std::string> &tokens) {
 }
 
 cameraFeature_id_t AravisGigE::id_find(const std::string &feature_name) {
-    for (const auto &pair : feature_names) {
-        if (pair.second == feature_name) {
+    for (const auto &pair : yarp_arv_int_feature_map) {
+        if (std::string(pair.second.featureName) == feature_name) {
             return pair.first;
         }
     }
+
+    for (const auto &pair : yarp_arv_float_feat_map) {
+        if (std::string(pair.second.featureName) == feature_name) {
+            return pair.first;
+        }
+    }
+    
     return YARP_FEATURE_INVALID;
 }
 

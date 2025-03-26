@@ -44,6 +44,7 @@ def main(remote_port: 'Remote port running the AravisGigE grabber' = '/grabber')
     # Crear y mostrar GUI
     app = QtWidgets.QApplication(sys.argv)
     controls = driver.viewIFrameGrabberControls()
+    print("Métodos disponibles en controls:", dir(controls))
     backend = GrabberControls2GuiBackend(controls) if controls else None
     gui = GrabberControls2GuiGUI(backend, remote_port)
     gui.show()
