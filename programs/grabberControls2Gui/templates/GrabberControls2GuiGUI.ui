@@ -17,7 +17,7 @@
    <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
-      <string>Tools</string>
+      <string>Tools (change pixelFormat for more features.)</string>
      </property>
      <property name="checkable">
       <bool>false</bool>
@@ -35,6 +35,13 @@
             <widget class="QLabel" name="brightnessLabel">
              <property name="text">
               <string>Brightness</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="brightnesscheckBox">
+             <property name="text">
+              <string>Auto</string>
              </property>
             </widget>
            </item>
@@ -60,6 +67,13 @@
             </widget>
            </item>
            <item>
+            <widget class="QCheckBox" name="shuttercheckBox">
+             <property name="text">
+              <string>Auto</string>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="QSlider" name="shutterSlider">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
@@ -77,6 +91,13 @@
             <widget class="QLabel" name="irisLabel">
              <property name="text">
               <string>Iris</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="irischeckBox">
+             <property name="text">
+              <string>Auto</string>
              </property>
             </widget>
            </item>
@@ -102,6 +123,13 @@
             </widget>
            </item>
            <item>
+            <widget class="QCheckBox" name="focuscheckBox">
+             <property name="text">
+              <string>Auto</string>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="QSlider" name="focusSlider">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
@@ -119,6 +147,13 @@
             <widget class="QLabel" name="temperatureLabel">
              <property name="text">
               <string>Temperature</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="temperaturecheckBox">
+             <property name="text">
+              <string>Auto</string>
              </property>
             </widget>
            </item>
@@ -144,6 +179,13 @@
             </widget>
            </item>
            <item>
+            <widget class="QCheckBox" name="whiteShadingcheckBox">
+             <property name="text">
+              <string>Auto</string>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="QSlider" name="whiteShadingSlider">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
@@ -161,6 +203,13 @@
             <widget class="QLabel" name="captureSizeLabel">
              <property name="text">
               <string>Capture Size</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="captureSizecheckBox">
+             <property name="text">
+              <string>Auto</string>
              </property>
             </widget>
            </item>
@@ -186,6 +235,13 @@
             </widget>
            </item>
            <item>
+            <widget class="QCheckBox" name="captureQualitycheckBox">
+             <property name="text">
+              <string>Auto</string>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="QSlider" name="captureQualitySlider">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
@@ -203,6 +259,13 @@
             <widget class="QLabel" name="mirrorLabel">
              <property name="text">
               <string>Mirror</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="mirrorcheckBox">
+             <property name="text">
+              <string>Auto</string>
              </property>
             </widget>
            </item>
@@ -228,6 +291,13 @@
             </widget>
            </item>
            <item>
+            <widget class="QCheckBox" name="exposurecheckBox">
+             <property name="text">
+              <string>Auto</string>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="QSlider" name="exposureSlider">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
@@ -245,6 +315,13 @@
             <widget class="QLabel" name="gainLabel">
              <property name="text">
               <string>Gain         </string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="gaincheckBox">
+             <property name="text">
+              <string>Auto</string>
              </property>
             </widget>
            </item>
@@ -270,6 +347,13 @@
             </widget>
            </item>
            <item>
+            <widget class="QCheckBox" name="sharpnesscheckBox">
+             <property name="text">
+              <string>Auto</string>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="QSlider" name="sharpnessSlider">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
@@ -287,6 +371,13 @@
             <widget class="QLabel" name="whiteBalanceLabel">
              <property name="text">
               <string>WhiteBalance</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="whiteBalancecheckBox">
+             <property name="text">
+              <string>Auto</string>
              </property>
             </widget>
            </item>
@@ -312,6 +403,13 @@
             </widget>
            </item>
            <item>
+            <widget class="QCheckBox" name="huecheckBox">
+             <property name="text">
+              <string>Auto</string>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="QSlider" name="hueSlider">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
@@ -329,6 +427,13 @@
             <widget class="QLabel" name="saturationLabel">
              <property name="text">
               <string>Saturation</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="saturationcheckBox">
+             <property name="text">
+              <string>Auto</string>
              </property>
             </widget>
            </item>
@@ -354,6 +459,13 @@
             </widget>
            </item>
            <item>
+            <widget class="QCheckBox" name="gammacheckBox">
+             <property name="text">
+              <string>Auto</string>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="QSlider" name="gammaSlider">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
@@ -373,6 +485,9 @@
         <property name="title">
          <string>Camera properties</string>
         </property>
+        <property name="checkable">
+         <bool>false</bool>
+        </property>
         <layout class="QVBoxLayout" name="verticalLayout">
          <item>
           <layout class="QHBoxLayout" name="triggerLayout">
@@ -380,6 +495,13 @@
             <widget class="QLabel" name="triggerLabel">
              <property name="text">
               <string>Trigger</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="triggercheckBox">
+             <property name="text">
+              <string>Auto</string>
              </property>
             </widget>
            </item>
@@ -405,6 +527,13 @@
             </widget>
            </item>
            <item>
+            <widget class="QCheckBox" name="triggerDelaycheckBox">
+             <property name="text">
+              <string>Auto</string>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="QSlider" name="triggerDelaySlider">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
@@ -422,6 +551,13 @@
             <widget class="QLabel" name="zoomLabel">
              <property name="text">
               <string>Zoom</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="zoomcheckBox">
+             <property name="text">
+              <string>Auto</string>
              </property>
             </widget>
            </item>
@@ -447,6 +583,13 @@
             </widget>
            </item>
            <item>
+            <widget class="QCheckBox" name="pancheckBox">
+             <property name="text">
+              <string>Auto</string>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="QSlider" name="panSlider">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
@@ -464,6 +607,13 @@
             <widget class="QLabel" name="tiltLabel">
              <property name="text">
               <string>Tilt</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="tiltcheckBox">
+             <property name="text">
+              <string>Auto</string>
              </property>
             </widget>
            </item>
@@ -489,6 +639,13 @@
             </widget>
            </item>
            <item>
+            <widget class="QCheckBox" name="opticalFiltercheckBox">
+             <property name="text">
+              <string>Auto</string>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="QSlider" name="opticalFilterSlider">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
@@ -506,6 +663,13 @@
             <widget class="QLabel" name="fpsLabel">
              <property name="text">
               <string>FPS           </string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="fpscheckBox">
+             <property name="text">
+              <string>Auto</string>
              </property>
             </widget>
            </item>

@@ -53,13 +53,15 @@ bool AravisGigE::hasFeature(int feature, bool * hasFeature) {
     *hasFeature = (arv_device_get_feature(device, info->featureName) != nullptr);
     if (!*hasFeature) {
         yCWarning(ARV) << "Feature" << info->featureName << "not found in camera";
+        return true;
     }
 
     bool compatible;
-    checkFeatureCompatibility(f, &compatible);
+    checkEnabled(f, &compatible);
     if (!compatible){
-        yCWarning(ARV) << "Feature" << info->featureName << "not in camera but not compatible for pixelFormat.";
         *hasFeature = false;
+        return true;
+        yCWarning(ARV) << "Feature" << info->featureName << "not in camera but not compatible for pixelFormat.";
     }
 
     return true;
@@ -82,7 +84,7 @@ bool AravisGigE::setFeature(int feature, double value) {
 
     // 1. Check feature compatibility with current pixel format
     bool compatible;
-    if (!checkFeatureCompatibility(f, &compatible)) {
+    if (!checkEnabled(f, &compatible)) {
         return false;
     }
     
@@ -271,7 +273,25 @@ bool AravisGigE::hasAuto(int feature, bool* hasAuto) {
         return false;
     }
 
-    *hasAuto = (info->autoName != nullptr);
+    ArvDevice *device = arv_camera_get_device(camera);
+    if (!device) {
+        yCError(ARV) << "Camera device not available";
+        return false;
+    }
+
+    GError* error = nullptr;
+    if (arv_camera_is_feature_available(camera, info->autoName, &error)==1 && arv_device_get_feature(device, info->autoName)!=0){
+        *hasAuto = true;
+        return true;
+    }
+
+    if (error) {
+        g_error_free(error);
+        *hasAuto = false;
+        return false;
+    }
+
+    *hasAuto = false;
     return true;
 }
 
@@ -391,44 +411,31 @@ bool AravisGigE::setOnePush(int feature) {
 /* ============================================
  * Feature Compatibility Check
  * ============================================ */
-bool AravisGigE::checkFeatureCompatibility(cameraFeature_id_t feature, bool* compatible) {
+bool AravisGigE::checkEnabled(cameraFeature_id_t feature, bool* compatible) {
+    if (!compatible) {
+        return false;
+    }
+
     const FeatureInfo* info = getFeatureInfo(feature);
     if (!info) {
         *compatible = false;
         return true;
     }
+    ArvDevice* device = arv_camera_get_device(camera);
 
-    // Get current pixel format
     GError* error = nullptr;
-    const char* pixelFormat = arv_device_get_string_feature_value(arv_camera_get_device(camera), "PixelFormat", &error);
-    
+    if (arv_camera_is_feature_available(camera, info->enabledName, &error)==0 && arv_device_get_feature(device, info->enabledName)!=0){
+        *compatible = false;
+        return true;
+    }
+
     if (error) {
-        yCError(ARV) << "Failed to get pixel format:" << error->message;
         g_error_free(error);
+        *compatible = false;
         return false;
     }
 
-    if (!pixelFormat) {
-        yCError(ARV) << "Pixel format not available";
-        return false;
-    }
-
-    // Determine format type
-    bool isRaw = (strstr(pixelFormat, "Bayer") != nullptr);
-    bool isColor = (strstr(pixelFormat, "RGB") != nullptr || 
-                   strstr(pixelFormat, "BGR") != nullptr ||
-                   strstr(pixelFormat, "YUV") != nullptr);
-    bool isMono = (strstr(pixelFormat, "Mono") != nullptr);
-
-    // Check compatibility
-    switch (info->compatibility) {
-        case COMPAT_RAW:    *compatible = isRaw; break;
-        case COMPAT_COLOR:  *compatible = isColor; break;
-        case COMPAT_MONO:   *compatible = isMono; break;
-        case COMPAT_ALL:    *compatible = true; break;
-        case COMPAT_NON_RAW:*compatible = !isRaw; break;
-    }
-
+    *compatible =true;
     return true;
 }
 
@@ -483,6 +490,7 @@ bool AravisGigE::getFeatureLimits(int feature, double *min, double *max) {
     }
     
     if (error) {
+        ArvDevice* device = arv_camera_get_device(camera);
         yCError(ARV) << "Error getting bounds for" << info->featureName << ":" << error->message;
         g_error_free(error);
     }
@@ -550,7 +558,13 @@ void AravisGigE::printFeatureInfo(cameraFeature_id_t featureId, const FeatureInf
 
     // Print compatibility
     bool compatible;
-    if (checkFeatureCompatibility(featureId, &compatible)) {
+    if (checkEnabled(featureId, &compatible)) {
         std::cout << "  Compatible with current format: " << (compatible ? "Yes" : "No") << "\n";
     }
+
+    bool jauto;
+    if (hasAuto(featureId, &jauto)) {
+        std::cout << "  jauto: " << (jauto ? "Yes" : "No") << "\n";
+    }
+
 }

@@ -12,20 +12,11 @@
 namespace roboticslab
 {
 
-enum FeatureCompatibility {
-    COMPAT_RAW,
-    COMPAT_COLOR,
-    COMPAT_MONO,
-    COMPAT_ALL,
-    COMPAT_NON_RAW
-};
-
 struct FeatureInfo {
     const char* featureName;
     const char* enabledName;
     const char* autoName;
     bool supportsOnePush;
-    FeatureCompatibility compatibility;
 };
 
 /**
@@ -77,7 +68,7 @@ public:
     bool getMode(int feature, FeatureMode * mode) override;
     bool setOnePush(int feature) override;
     bool getFeatureLimits(int feature, double *min, double *max);
-    bool checkFeatureCompatibility(cameraFeature_id_t feature, bool* compatible);
+    bool checkEnabled(cameraFeature_id_t feature, bool* compatible);
     const FeatureInfo* getFeatureInfo(cameraFeature_id_t feature); 
     void printFeatureInfo(cameraFeature_id_t featureId, const FeatureInfo& info);
 
@@ -126,32 +117,32 @@ private:
 
     // Mapa de características con toda la metadata
     const std::map<cameraFeature_id_t, FeatureInfo> yarp_arv_int_feature_map = {
-        {YARP_FEATURE_BRIGHTNESS, {"Brightness", "BrightnessEnabled", "BrightnessAuto", false, COMPAT_ALL}},
-        {YARP_FEATURE_SHUTTER, {"Shutter", "ShutterEnabled", "ShutterAuto", true, COMPAT_ALL}},
-        {YARP_FEATURE_IRIS, {"Iris", "IrisEnabled", "IrisAuto", false, COMPAT_ALL}},
-        {YARP_FEATURE_FOCUS, {"Focus", "FocusEnabled", "FocusAuto", true, COMPAT_ALL}},
-        {YARP_FEATURE_TEMPERATURE, {"Temperature", "TemperatureEnabled", nullptr, false, COMPAT_ALL}},
-        {YARP_FEATURE_TRIGGER, {"Trigger", "TriggerEnabled", nullptr, false, COMPAT_ALL}},
-        {YARP_FEATURE_WHITE_SHADING, {"WhiteShading", "WhiteShadingEnabled", nullptr, false, COMPAT_COLOR}},
-        {YARP_FEATURE_ZOOM, {"Zoom", "ZoomEnabled", "ZoomAuto", false, COMPAT_ALL}},
-        {YARP_FEATURE_PAN, {"Pan", "PanEnabled", "PanAuto", false, COMPAT_ALL}},
-        {YARP_FEATURE_TILT, {"Tilt", "TiltEnabled", "TiltAuto", false, COMPAT_ALL}},
-        {YARP_FEATURE_SHARPNESS, {"Sharpness", "SharpnessEnabled", "SharpnessAuto", false, COMPAT_NON_RAW}},
-        {YARP_FEATURE_OPTICAL_FILTER, {"OpticalFilter", "OpticalFilterEnabled", nullptr, false, COMPAT_ALL}},
-        {YARP_FEATURE_CAPTURE_SIZE, {"CaptureSize", "CaptureSizeEnabled", nullptr, false, COMPAT_ALL}},
-        {YARP_FEATURE_CAPTURE_QUALITY, {"CaptureQuality", "CaptureQualityEnabled", nullptr, false, COMPAT_ALL}},
-        {YARP_FEATURE_MIRROR, {"Mirror", "MirrorEnabled", nullptr, false, COMPAT_ALL}}
+        {YARP_FEATURE_BRIGHTNESS, {"Brightness", "BrightnessEnabled", "BrightnessAuto", false}},
+        {YARP_FEATURE_SHUTTER, {"Shutter", "ShutterEnabled", "ShutterAuto", true}},
+        {YARP_FEATURE_IRIS, {"Iris", "IrisEnabled", "IrisAuto", false}},
+        {YARP_FEATURE_FOCUS, {"Focus", "FocusEnabled", "FocusAuto", true}},
+        {YARP_FEATURE_TEMPERATURE, {"Temperature", "TemperatureEnabled", nullptr, false}},
+        {YARP_FEATURE_TRIGGER, {"Trigger", "TriggerEnabled", "TriggerAuto", false}},
+        {YARP_FEATURE_WHITE_SHADING, {"WhiteShading", "WhiteShadingEnabled", nullptr, false}},
+        {YARP_FEATURE_ZOOM, {"Zoom", "ZoomEnabled", "ZoomAuto", false}},
+        {YARP_FEATURE_PAN, {"Pan", "PanEnabled", "PanAuto", false}},
+        {YARP_FEATURE_TILT, {"Tilt", "TiltEnabled", "TiltAuto", false}},
+        {YARP_FEATURE_SHARPNESS, {"Sharpness", "SharpnessEnabled", "SharpnessAuto", false}},
+        {YARP_FEATURE_OPTICAL_FILTER, {"OpticalFilter", "OpticalFilterEnabled", "OpticalFilter", false}},
+        {YARP_FEATURE_CAPTURE_SIZE, {"CaptureSize", "CaptureSizeEnabled", "CaptureSizeAuto", false}},
+        {YARP_FEATURE_CAPTURE_QUALITY, {"CaptureQuality", "CaptureQualityEnabled", "CaptureQualityAuto", false}},
+        {YARP_FEATURE_MIRROR, {"Mirror", "MirrorEnabled", "MirrorAuto", false}}
     };
 
     const std::map<cameraFeature_id_t, FeatureInfo> yarp_arv_float_feat_map = {
-        {YARP_FEATURE_EXPOSURE, {"ExposureTime", "ExposureEnabled", "ExposureAuto", true, COMPAT_ALL}},
-        {YARP_FEATURE_TRIGGER_DELAY, {"TriggerDelay", "TriggerDelayEnabled", nullptr, false, COMPAT_ALL}},
-        {YARP_FEATURE_GAIN, {"Gain", "GainEnabled", "GainAuto", true, COMPAT_ALL}},
-        {YARP_FEATURE_FRAME_RATE, {"AcquisitionFrameRate", "AcquisitionFrameRateEnabled", "AcquisitionFrameRateAuto", false, COMPAT_ALL}},
-        {YARP_FEATURE_WHITE_BALANCE, {"BalanceWhite", "BalanceWhiteEnabled", "BalanceWhiteAuto", true, COMPAT_COLOR}},
-        {YARP_FEATURE_HUE, {"Hue", "HueEnabled", "HueAuto", false, COMPAT_COLOR}},
-        {YARP_FEATURE_SATURATION, {"Saturation", "SaturationEnabled", "SaturationAuto", false, COMPAT_COLOR}},
-        {YARP_FEATURE_GAMMA, {"Gamma", "GammaEnabled", "GammaAuto", false, COMPAT_NON_RAW}}
+        {YARP_FEATURE_EXPOSURE, {"ExposureTime", "ExposureEnabled", "ExposureAuto", true}},
+        {YARP_FEATURE_TRIGGER_DELAY, {"TriggerDelay", "TriggerDelayEnabled", "TriggerDelayAuto", false}},
+        {YARP_FEATURE_GAIN, {"Gain", "GainEnabled", "GainAuto", true}},
+        {YARP_FEATURE_FRAME_RATE, {"AcquisitionFrameRate", "AcquisitionFrameRateEnabled", "AcquisitionFrameRateAuto", false}},
+        {YARP_FEATURE_WHITE_BALANCE, {"BalanceWhite", "BalanceWhiteEnabled", "BalanceWhiteAuto", true}},
+        {YARP_FEATURE_HUE, {"Hue", "HueEnabled", "HueAuto", false}},
+        {YARP_FEATURE_SATURATION, {"Saturation", "SaturationEnabled", "SaturationAuto", false}},
+        {YARP_FEATURE_GAMMA, {"Gamma", "GammaEnabled", "GammaAuto", false}}
     };
 
 };

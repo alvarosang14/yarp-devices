@@ -5,7 +5,7 @@ import yarp
 class GrabberControls2GuiBackend:
     def __init__(self, controls):
         self.controls = controls
-        print("---------------", self.controls.setMode(yarp.YARP_FEATURE_GAIN, yarp.MODE_MANUAL))
+        #self.controls.setMode(yarp.YARP_FEATURE_GAIN, yarp.MODE_MANUAL)
 
     def init(self):
         pass
@@ -61,6 +61,16 @@ class GrabberControls2GuiBackend:
         self.controls.getFeature2(yarp.YARP_FEATURE_GAIN, value1, value2)
         return value1[0], value2[0]
 
+    def get_gain_mode(self):
+        return 1 if self.controls.getMode(yarp.YARP_FEATURE_GAIN)==2 else 0
+
+    def set_gain_mode(self, mode):
+        logging.debug("Gain mode set to {}".format(mode))
+        self.controls.setMode(yarp.YARP_FEATURE_GAIN, mode)
+
+    def has_gain_auto(self):
+        return self.controls.hasAuto(yarp.YARP_FEATURE_GAIN)
+
     def set_exposure(self, exposure):
         logging.debug("Exposure set to {}".format(exposure))
         self.controls.setFeature(yarp.YARP_FEATURE_EXPOSURE, exposure)
@@ -76,6 +86,16 @@ class GrabberControls2GuiBackend:
         value2 = yarp.DVector(1)
         self.controls.getFeature2(yarp.YARP_FEATURE_EXPOSURE, value1, value2)
         return value1[0], value2[0]
+
+    def get_exposure_mode(self):
+        return 1 if self.controls.getMode(yarp.YARP_FEATURE_EXPOSURE)==2 else 0
+
+    def set_exposure_mode(self, mode):
+        logging.debug("Gain mode set to {}".format(mode))
+        self.controls.setMode(yarp.YARP_FEATURE_EXPOSURE, mode)
+
+    def has_exposure_auto(self):
+        return self.controls.hasAuto(yarp.YARP_FEATURE_EXPOSURE)
 
     def set_FPS(self, fps):
         logging.debug("FPS set to {}".format(fps))
@@ -380,3 +400,97 @@ class GrabberControls2GuiBackend:
         value2 = yarp.DVector(1)
         self.controls.getFeature2(yarp.YARP_FEATURE_GAMMA, value1, value2)
         return value1[0], value2[0]
+
+    def get_white_balance_mode(self):
+        return self.controls.getMode(
+            yarp.YARP_FEATURE_WHITE_BALANCE) if self.has_white_balance_auto() else yarp.MODE_MANUAL
+
+    def set_white_balance_mode(self, mode):
+        if self.has_white_balance_auto():
+            self.controls.setMode(yarp.YARP_FEATURE_WHITE_BALANCE, mode)
+
+    def has_white_balance_auto(self):
+        return self.controls.hasAuto(yarp.YARP_FEATURE_WHITE_BALANCE)
+
+    def get_shutter_mode(self):
+        return self.controls.getMode(yarp.YARP_FEATURE_SHUTTER) if self.has_shutter_auto() else yarp.MODE_MANUAL
+
+    def set_shutter_mode(self, mode):
+        if self.has_shutter_auto():
+            self.controls.setMode(yarp.YARP_FEATURE_SHUTTER, mode)
+
+    def has_shutter_auto(self):
+        return self.controls.hasAuto(yarp.YARP_FEATURE_SHUTTER)
+
+    def get_iris_mode(self):
+        return self.controls.getMode(yarp.YARP_FEATURE_IRIS) if self.has_iris_auto() else yarp.MODE_MANUAL
+
+    def set_iris_mode(self, mode):
+        if self.has_iris_auto():
+            self.controls.setMode(yarp.YARP_FEATURE_IRIS, mode)
+
+    def has_iris_auto(self):
+        return self.controls.hasAuto(yarp.YARP_FEATURE_IRIS)
+
+    def get_brightness_mode(self):
+        return self.controls.getMode(
+            yarp.YARP_FEATURE_BRIGHTNESS) if self.has_brightness_auto() else yarp.MODE_MANUAL
+
+    def set_brightness_mode(self, mode):
+        if self.has_brightness_auto():
+            self.controls.setMode(yarp.YARP_FEATURE_BRIGHTNESS, mode)
+
+    def has_brightness_auto(self):
+        return self.controls.hasAuto(yarp.YARP_FEATURE_BRIGHTNESS)
+
+    def get_sharpness_mode(self):
+        return self.controls.getMode(yarp.YARP_FEATURE_SHARPNESS) if self.has_sharpness_auto() else yarp.MODE_MANUAL
+
+    def set_sharpness_mode(self, mode):
+        if self.has_sharpness_auto():
+            self.controls.setMode(yarp.YARP_FEATURE_SHARPNESS, mode)
+
+    def has_sharpness_auto(self):
+        return self.controls.hasAuto(yarp.YARP_FEATURE_SHARPNESS)
+
+    def get_hue_mode(self):
+        return self.controls.getMode(yarp.YARP_FEATURE_HUE) if self.has_hue_auto() else yarp.MODE_MANUAL
+
+    def set_hue_mode(self, mode):
+        if self.has_hue_auto():
+            self.controls.setMode(yarp.YARP_FEATURE_HUE, mode)
+
+    def has_hue_auto(self):
+        return self.controls.hasAuto(yarp.YARP_FEATURE_HUE)
+
+    def get_saturation_mode(self):
+        return self.controls.getMode(
+            yarp.YARP_FEATURE_SATURATION) if self.has_saturation_auto() else yarp.MODE_MANUAL
+
+    def set_saturation_mode(self, mode):
+        if self.has_saturation_auto():
+            self.controls.setMode(yarp.YARP_FEATURE_SATURATION, mode)
+
+    def has_saturation_auto(self):
+        return self.controls.hasAuto(yarp.YARP_FEATURE_SATURATION)
+
+    def get_gamma_mode(self):
+        return self.controls.getMode(yarp.YARP_FEATURE_GAMMA) if self.has_gamma_auto() else yarp.MODE_MANUAL
+
+    def set_gamma_mode(self, mode):
+        if self.has_gamma_auto():
+            self.controls.setMode(yarp.YARP_FEATURE_GAMMA, mode)
+
+    def has_gamma_auto(self):
+        return self.controls.hasAuto(yarp.YARP_FEATURE_GAMMA)
+
+    def get_temperature_mode(self):
+        return self.controls.getMode(
+            yarp.YARP_FEATURE_TEMPERATURE) if self.has_temperature_auto() else yarp.MODE_MANUAL
+
+    def set_temperature_mode(self, mode):
+        if self.has_temperature_auto():
+            self.controls.setMode(yarp.YARP_FEATURE_TEMPERATURE, mode)
+
+    def has_temperature_auto(self):
+        return self.controls.hasAuto(yarp.YARP_FEATURE_TEMPERATURE)

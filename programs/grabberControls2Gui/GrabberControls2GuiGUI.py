@@ -129,6 +129,31 @@ class GrabberControls2GuiGUI(QtWidgets.QWidget):
         self.current_pixmap = None
         self.cameraView = None
 
+        # Auto checkboxes
+        self.zoomCheckBox = None
+        self.focusCheckBox = None
+        self.gainCheckBox = None
+        self.exposureCheckBox = None
+        self.fpsCheckBox = None
+        self.brightnessCheckBox = None
+        self.shutterCheckBox = None
+        self.irisCheckBox = None
+        self.temperatureCheckBox = None
+        self.whiteShadingCheckBox = None
+        self.captureSizeCheckBox = None
+        self.captureQualityCheckBox = None
+        self.mirrorCheckBox = None
+        self.sharpnessCheckBox = None
+        self.whiteBalanceCheckBox = None
+        self.hueCheckBox = None
+        self.saturationCheckBox = None
+        self.gammaCheckBox = None
+        self.triggerCheckBox = None
+        self.triggerDelayCheckBox = None
+        self.panCheckBox = None
+        self.tiltCheckBox = None
+        self.opticalFilterCheckBox = None
+
         self.setupUI()
         self.resetValues()
         self.startCameraReading()
@@ -214,6 +239,31 @@ class GrabberControls2GuiGUI(QtWidgets.QWidget):
         self.tiltLayout = self.findChild(QtWidgets.QHBoxLayout, 'tiltLayout')
         self.opticalFilterLayout = self.findChild(QtWidgets.QHBoxLayout, 'opticalFilterLayout')
 
+        # CheckBox
+        self.zoomCheckBox = self.findChild(QtWidgets.QCheckBox, 'zoomcheckBox')
+        self.focusCheckBox = self.findChild(QtWidgets.QCheckBox, 'focuscheckBox')
+        self.gainCheckBox = self.findChild(QtWidgets.QCheckBox, 'gaincheckBox')
+        self.exposureCheckBox = self.findChild(QtWidgets.QCheckBox, 'exposurecheckBox')
+        self.fpsCheckBox = self.findChild(QtWidgets.QCheckBox, 'fpscheckBox')
+        self.brightnessCheckBox = self.findChild(QtWidgets.QCheckBox, 'brightnesscheckBox')
+        self.shutterCheckBox = self.findChild(QtWidgets.QCheckBox, 'shuttercheckBox')
+        self.irisCheckBox = self.findChild(QtWidgets.QCheckBox, 'irischeckBox')
+        self.temperatureCheckBox = self.findChild(QtWidgets.QCheckBox, 'temperaturecheckBox')
+        self.whiteShadingCheckBox = self.findChild(QtWidgets.QCheckBox, 'whiteShadingcheckBox')
+        self.captureSizeCheckBox = self.findChild(QtWidgets.QCheckBox, 'captureSizecheckBox')
+        self.captureQualityCheckBox = self.findChild(QtWidgets.QCheckBox, 'captureQualitycheckBox')
+        self.mirrorCheckBox = self.findChild(QtWidgets.QCheckBox, 'mirrorcheckBox')
+        self.sharpnessCheckBox = self.findChild(QtWidgets.QCheckBox, 'sharpnesscheckBox')
+        self.whiteBalanceCheckBox = self.findChild(QtWidgets.QCheckBox, 'whiteBalancecheckBox')
+        self.hueCheckBox = self.findChild(QtWidgets.QCheckBox, 'huecheckBox')
+        self.saturationCheckBox = self.findChild(QtWidgets.QCheckBox, 'saturationcheckBox')
+        self.gammaCheckBox = self.findChild(QtWidgets.QCheckBox, 'gammacheckBox')
+        self.triggerCheckBox = self.findChild(QtWidgets.QCheckBox, 'triggercheckBox')
+        self.triggerDelayCheckBox = self.findChild(QtWidgets.QCheckBox, 'triggerDelaycheckBox')
+        self.panCheckBox = self.findChild(QtWidgets.QCheckBox, 'pancheckBox')
+        self.tiltCheckBox = self.findChild(QtWidgets.QCheckBox, 'tiltcheckBox')
+        self.opticalFilterCheckBox = self.findChild(QtWidgets.QCheckBox, 'opticalFiltercheckBox')
+
         self.cameraView = self.findChild(QtWidgets.QLabel, 'cameraView')
         if self.cameraView is not None:
             self.cameraView.setText("Esperando imagen de la cámara...")
@@ -273,6 +323,31 @@ class GrabberControls2GuiGUI(QtWidgets.QWidget):
         self.opticalFilterSlider.valueChanged.connect(self.onOpticalFilterSliderChanged)
         self.opticalFilterSpinBox.valueChanged.connect(self.onOpticalFilterSpinBoxChanged)
 
+        # Set check
+        self.zoomCheckBox.stateChanged.connect(self.onZoomCheckBoxChanged)
+        self.focusCheckBox.stateChanged.connect(self.onFocusCheckBoxChanged)
+        self.gainCheckBox.stateChanged.connect(self.onGainCheckBoxChanged)
+        self.exposureCheckBox.stateChanged.connect(self.onExposureCheckBoxChanged)
+        self.fpsCheckBox.stateChanged.connect(self.onfpsCheckBoxChanged)
+        self.brightnessCheckBox.stateChanged.connect(self.onBrightnessCheckBoxChanged)
+        self.shutterCheckBox.stateChanged.connect(self.onShutterCheckBoxChanged)
+        self.irisCheckBox.stateChanged.connect(self.onIrisCheckBoxChanged)
+        self.temperatureCheckBox.stateChanged.connect(self.onTemperatureCheckBoxChanged)
+        self.whiteShadingCheckBox.stateChanged.connect(self.onWhiteShadingCheckBoxChanged)
+        self.captureSizeCheckBox.stateChanged.connect(self.onCaptureSizeCheckBoxChanged)
+        self.captureQualityCheckBox.stateChanged.connect(self.onCaptureQualityCheckBoxChanged)
+        self.mirrorCheckBox.stateChanged.connect(self.onMirrorCheckBoxChanged)
+        self.sharpnessCheckBox.stateChanged.connect(self.onSharpnessCheckBoxChanged)
+        self.whiteBalanceCheckBox.stateChanged.connect(self.onWhiteBalanceCheckBoxChanged)
+        self.hueCheckBox.stateChanged.connect(self.onHueCheckBoxChanged)
+        self.saturationCheckBox.stateChanged.connect(self.onSaturationCheckBoxChanged)
+        self.gammaCheckBox.stateChanged.connect(self.onGammaCheckBoxChanged)
+        self.triggerCheckBox.stateChanged.connect(self.onTriggerCheckBoxChanged)
+        self.triggerDelayCheckBox.stateChanged.connect(self.onTriggerDelayCheckBoxChanged)
+        self.panCheckBox.stateChanged.connect(self.onPanCheckBoxChanged)
+        self.tiltCheckBox.stateChanged.connect(self.onTiltCheckBoxChanged)
+        self.opticalFilterCheckBox.stateChanged.connect(self.onOpticalFilterCheckBoxChanged)
+
     def resetValues(self):
         self.zoomSlider.setValue(self.controller.get_zoom())
         self.zoomSpinBox.setValue(self.controller.get_zoom())
@@ -322,202 +397,12 @@ class GrabberControls2GuiGUI(QtWidgets.QWidget):
         self.opticalFilterSpinBox.setValue(self.controller.get_optical_filter())
 
     def visibility(self):
-        if not self.controller.has_brightness():
-            self.brightnessSlider.setVisible(False)
-            self.brightnessSpinBox.setVisible(False)
-            self.findChild(QtWidgets.QLabel, 'brightnessLabel').setVisible(False)
-        else:
-            self.brightnessSlider.setEnabled(True)
-            self.brightnessSpinBox.setEnabled(True)
-            self.findChild(QtWidgets.QLabel, 'brightnessLabel').setEnabled(True)
-            min_val, max_val = self.controller.get_brightness_range()
-            self.brightnessSlider.setRange(int(min_val), int(max_val))  # Slider sigue usando enteros
-            self.brightnessSpinBox.setRange(min_val, max_val)  # SpinBox usa valores decimales
-
-        if not self.controller.has_shutter():
-            self.shutterSlider.setVisible(False)
-            self.shutterSpinBox.setVisible(False)
-            self.findChild(QtWidgets.QLabel, 'shutterLabel').setVisible(False)
-        else:
-            self.shutterSlider.setEnabled(True)
-            self.shutterSpinBox.setEnabled(True)
-            self.findChild(QtWidgets.QLabel, 'shutterLabel').setEnabled(True)
-            min_val, max_val = self.controller.get_shutter_range()
-            self.shutterSlider.setRange(int(min_val), int(max_val))
-            self.shutterSpinBox.setRange(min_val, max_val)
-
-        if not self.controller.has_iris():
-            self.irisSlider.setVisible(False)
-            self.irisSpinBox.setVisible(False)
-            self.findChild(QtWidgets.QLabel, 'irisLabel').setVisible(False)
-        else:
-            self.irisSlider.setEnabled(True)
-            self.irisSpinBox.setEnabled(True)
-            self.findChild(QtWidgets.QLabel, 'irisLabel').setEnabled(True)
-            min_val, max_val = self.controller.get_iris_range()
-            self.irisSlider.setRange(int(min_val), int(max_val))
-            self.irisSpinBox.setRange(min_val, max_val)
-
-        if not self.controller.has_focus():
-            self.focusSlider.setVisible(False)
-            self.focusSpinBox.setVisible(False)
-            self.findChild(QtWidgets.QLabel, 'focusLabel').setVisible(False)
-        else:
-            self.focusSlider.setEnabled(True)
-            self.focusSpinBox.setEnabled(True)
-            self.findChild(QtWidgets.QLabel, 'focusLabel').setEnabled(True)
-            min_val, max_val = self.controller.get_focus_range()
-            self.focusSlider.setRange(int(min_val), int(max_val))
-            self.focusSpinBox.setRange(min_val, max_val)
-
-        if not self.controller.has_temperature():
-            self.temperatureSlider.setVisible(False)
-            self.temperatureSpinBox.setVisible(False)
-            self.findChild(QtWidgets.QLabel, 'temperatureLabel').setVisible(False)
-        else:
-            self.temperatureSlider.setEnabled(True)
-            self.temperatureSpinBox.setEnabled(True)
-            self.findChild(QtWidgets.QLabel, 'temperatureLabel').setEnabled(True)
-            min_val, max_val = self.controller.get_temperature_range()
-            self.temperatureSlider.setRange(int(min_val), int(max_val))
-            self.temperatureSpinBox.setRange(min_val, max_val)
-
-        if not self.controller.has_white_shading():
-            self.whiteShadingSlider.setVisible(False)
-            self.whiteShadingSpinBox.setVisible(False)
-            self.findChild(QtWidgets.QLabel, 'whiteShadingLabel').setVisible(False)
-        else:
-            self.whiteShadingSlider.setEnabled(True)
-            self.whiteShadingSpinBox.setEnabled(True)
-            self.findChild(QtWidgets.QLabel, 'whiteShadingLabel').setEnabled(True)
-            min_val, max_val = self.controller.get_white_shading_range()
-            self.whiteShadingSlider.setRange(int(min_val), int(max_val))
-            self.whiteShadingSpinBox.setRange(min_val, max_val)
-
-        if not self.controller.has_capture_size():
-            self.captureSizeSlider.setVisible(False)
-            self.captureSizeSpinBox.setVisible(False)
-            self.findChild(QtWidgets.QLabel, 'captureSizeLabel').setVisible(False)
-        else:
-            self.captureSizeSlider.setEnabled(True)
-            self.captureSizeSpinBox.setEnabled(True)
-            self.findChild(QtWidgets.QLabel, 'captureSizeLabel').setEnabled(True)
-            min_val, max_val = self.controller.get_capture_size_range()
-            self.captureSizeSlider.setRange(int(min_val), int(max_val))
-            self.captureSizeSpinBox.setRange(min_val, max_val)
-
-        if not self.controller.has_capture_quality():
-            self.captureQualitySlider.setVisible(False)
-            self.captureQualitySpinBox.setVisible(False)
-            self.findChild(QtWidgets.QLabel, 'captureQualityLabel').setVisible(False)
-        else:
-            self.captureQualitySlider.setEnabled(True)
-            self.captureQualitySpinBox.setEnabled(True)
-            self.findChild(QtWidgets.QLabel, 'captureQualityLabel').setEnabled(True)
-            min_val, max_val = self.controller.get_capture_quality_range()
-            self.captureQualitySlider.setRange(int(min_val), int(max_val))
-            self.captureQualitySpinBox.setRange(min_val, max_val)
-
-        if not self.controller.has_mirror():
-            self.mirrorSlider.setVisible(False)
-            self.mirrorSpinBox.setVisible(False)
-            self.findChild(QtWidgets.QLabel, 'mirrorLabel').setVisible(False)
-        else:
-            self.mirrorSlider.setEnabled(True)
-            self.mirrorSpinBox.setEnabled(True)
-            self.findChild(QtWidgets.QLabel, 'mirrorLabel').setEnabled(True)
-            min_val, max_val = self.controller.get_mirror_range()
-            self.mirrorSlider.setRange(int(min_val), int(max_val))
-            self.mirrorSpinBox.setRange(min_val, max_val)
-
-        if not self.controller.has_sharpness():
-            self.sharpnessSlider.setVisible(False)
-            self.sharpnessSpinBox.setVisible(False)
-            self.findChild(QtWidgets.QLabel, 'sharpnessLabel').setVisible(False)
-        else:
-            self.sharpnessSlider.setEnabled(True)
-            self.sharpnessSpinBox.setEnabled(True)
-            self.findChild(QtWidgets.QLabel, 'sharpnessLabel').setEnabled(True)
-            min_val, max_val = self.controller.get_sharpness_range()
-            self.sharpnessSlider.setRange(int(min_val), int(max_val))
-            self.sharpnessSpinBox.setRange(min_val, max_val)
-
-        if not self.controller.has_white_balance():
-            self.whiteBalanceSlider.setVisible(False)
-            self.whiteBalanceSpinBox.setVisible(False)
-            self.findChild(QtWidgets.QLabel, 'whiteBalanceLabel').setVisible(False)
-        else:
-            self.whiteBalanceSlider.setEnabled(True)
-            self.whiteBalanceSpinBox.setEnabled(True)
-            self.findChild(QtWidgets.QLabel, 'whiteBalanceLabel').setEnabled(True)
-            min_val, max_val = self.controller.get_white_balance_range()
-            self.whiteBalanceSlider.setRange(int(min_val), int(max_val))
-            self.whiteBalanceSpinBox.setRange(min_val, max_val)
-
-        if not self.controller.has_hue():
-            self.hueSlider.setVisible(False)
-            self.hueSpinBox.setVisible(False)
-            self.findChild(QtWidgets.QLabel, 'hueLabel').setVisible(False)
-        else:
-            self.hueSlider.setEnabled(True)
-            self.hueSpinBox.setEnabled(True)
-            self.findChild(QtWidgets.QLabel, 'hueLabel').setEnabled(True)
-            min_val, max_val = self.controller.get_hue_range()
-            self.hueSlider.setRange(int(min_val), int(max_val))
-            self.hueSpinBox.setRange(min_val, max_val)
-
-        if not self.controller.has_saturation():
-            self.saturationSlider.setVisible(False)
-            self.saturationSpinBox.setVisible(False)
-            self.findChild(QtWidgets.QLabel, 'saturationLabel').setVisible(False)
-        else:
-            self.saturationSlider.setEnabled(True)
-            self.saturationSpinBox.setEnabled(True)
-            self.findChild(QtWidgets.QLabel, 'saturationLabel').setEnabled(True)
-            min_val, max_val = self.controller.get_saturation_range()
-            self.saturationSlider.setRange(int(min_val), int(max_val))
-            self.saturationSpinBox.setRange(min_val, max_val)
-
-        if not self.controller.has_gamma():
-            self.gammaSlider.setVisible(False)
-            self.gammaSpinBox.setVisible(False)
-            self.findChild(QtWidgets.QLabel, 'gammaLabel').setVisible(False)
-        else:
-            self.gammaSlider.setEnabled(True)
-            self.gammaSpinBox.setEnabled(True)
-            self.findChild(QtWidgets.QLabel, 'gammaLabel').setEnabled(True)
-            min_val, max_val = self.controller.get_gamma_range()
-            self.gammaSlider.setRange(int(min_val), int(max_val))
-            self.gammaSpinBox.setRange(min_val, max_val)
-
-        if not self.controller.has_trigger():
-            self.triggerSlider.setVisible(False)
-            self.triggerSpinBox.setVisible(False)
-            self.findChild(QtWidgets.QLabel, 'triggerLabel').setVisible(False)
-        else:
-            self.triggerSlider.setEnabled(True)
-            self.triggerSpinBox.setEnabled(True)
-            self.findChild(QtWidgets.QLabel, 'triggerLabel').setEnabled(True)
-            min_val, max_val = self.controller.get_trigger_range()
-            self.triggerSlider.setRange(int(min_val), int(max_val))
-            self.triggerSpinBox.setRange(min_val, max_val)
-
-        if not self.controller.has_trigger_delay():
-            self.triggerDelaySlider.setVisible(False)
-            self.triggerDelaySpinBox.setVisible(False)
-            self.findChild(QtWidgets.QLabel, 'triggerDelayLabel').setVisible(False)
-        else:
-            self.triggerDelaySlider.setEnabled(True)
-            self.triggerDelaySpinBox.setEnabled(True)
-            self.findChild(QtWidgets.QLabel, 'triggerDelayLabel').setEnabled(True)
-            min_val, max_val = self.controller.get_trigger_delay_range()
-            self.triggerDelaySlider.setRange(int(min_val), int(max_val))
-            self.triggerDelaySpinBox.setRange(min_val, max_val)
-
+        # Zoom
         if not self.controller.has_zoom():
             self.zoomSlider.setVisible(False)
             self.zoomSpinBox.setVisible(False)
             self.findChild(QtWidgets.QLabel, 'zoomLabel').setVisible(False)
+            self.zoomCheckBox.setVisible(False)
         else:
             self.zoomSlider.setEnabled(True)
             self.zoomSpinBox.setEnabled(True)
@@ -525,47 +410,71 @@ class GrabberControls2GuiGUI(QtWidgets.QWidget):
             min_val, max_val = self.controller.get_zoom_range()
             self.zoomSlider.setRange(int(min_val), int(max_val))
             self.zoomSpinBox.setRange(min_val, max_val)
+            if hasattr(self.controller, 'has_zoom_auto') and self.controller.has_zoom_auto():
+                self.zoomCheckBox.setChecked(self.controller.get_zoom_mode())
+            else:
+                self.zoomCheckBox.setVisible(False)
 
-        if not self.controller.has_pan():
-            self.panSlider.setVisible(False)
-            self.panSpinBox.setVisible(False)
-            self.findChild(QtWidgets.QLabel, 'panLabel').setVisible(False)
+        # Focus
+        if not self.controller.has_focus():
+            self.focusSlider.setVisible(False)
+            self.focusSpinBox.setVisible(False)
+            self.findChild(QtWidgets.QLabel, 'focusLabel').setVisible(False)
+            self.focusCheckBox.setVisible(False)
         else:
-            self.panSlider.setEnabled(True)
-            self.panSpinBox.setEnabled(True)
-            self.findChild(QtWidgets.QLabel, 'panLabel').setEnabled(True)
-            min_val, max_val = self.controller.get_pan_range()
-            self.panSlider.setRange(int(min_val), int(max_val))
-            self.panSpinBox.setRange(min_val, max_val)
+            self.focusSlider.setEnabled(True)
+            self.focusSpinBox.setEnabled(True)
+            self.findChild(QtWidgets.QLabel, 'focusLabel').setEnabled(True)
+            min_val, max_val = self.controller.get_focus_range()
+            self.focusSlider.setRange(int(min_val), int(max_val))
+            self.focusSpinBox.setRange(min_val, max_val)
+            if hasattr(self.controller, 'has_focus_auto') and self.controller.has_focus_auto():
+                self.focusCheckBox.setChecked(self.controller.get_focus_mode())
+            else:
+                self.focusCheckBox.setVisible(False)
 
-        if not self.controller.has_tilt():
-            self.tiltSlider.setVisible(False)
-            self.tiltSpinBox.setVisible(False)
-            self.findChild(QtWidgets.QLabel, 'tiltLabel').setVisible(False)
+        # Gain
+        if not self.controller.has_gain():
+            self.gainSlider.setVisible(False)
+            self.gainSpinBox.setVisible(False)
+            self.findChild(QtWidgets.QLabel, 'gainLabel').setVisible(False)
+            self.gainCheckBox.setVisible(False)
         else:
-            self.tiltSlider.setEnabled(True)
-            self.tiltSpinBox.setEnabled(True)
-            self.findChild(QtWidgets.QLabel, 'tiltLabel').setEnabled(True)
-            min_val, max_val = self.controller.get_tilt_range()
-            self.tiltSlider.setRange(int(min_val), int(max_val))
-            self.tiltSpinBox.setRange(min_val, max_val)
+            self.gainSlider.setEnabled(True)
+            self.gainSpinBox.setEnabled(True)
+            self.findChild(QtWidgets.QLabel, 'gainLabel').setEnabled(True)
+            min_val, max_val = self.controller.get_gain_range()
+            self.gainSlider.setRange(int(min_val), int(max_val))
+            self.gainSpinBox.setRange(min_val, max_val)
+            if self.controller.has_gain_auto():
+                self.gainCheckBox.setChecked(self.controller.get_gain_mode())
+            else:
+                self.gainCheckBox.setVisible(False)
 
-        if not self.controller.has_optical_filter():
-            self.opticalFilterSlider.setVisible(False)
-            self.opticalFilterSpinBox.setVisible(False)
-            self.findChild(QtWidgets.QLabel, 'opticalFilterLabel').setVisible(False)
+        # Exposure
+        if not self.controller.has_exposure():
+            self.exposureSlider.setVisible(False)
+            self.exposureSpinBox.setVisible(False)
+            self.findChild(QtWidgets.QLabel, 'exposureLabel').setVisible(False)
+            self.exposureCheckBox.setVisible(False)
         else:
-            self.opticalFilterSlider.setEnabled(True)
-            self.opticalFilterSpinBox.setEnabled(True)
-            self.findChild(QtWidgets.QLabel, 'opticalFilterLabel').setEnabled(True)
-            min_val, max_val = self.controller.get_optical_filter_range()
-            self.opticalFilterSlider.setRange(int(min_val), int(max_val))
-            self.opticalFilterSpinBox.setRange(min_val, max_val)
+            self.exposureSlider.setEnabled(True)
+            self.exposureSpinBox.setEnabled(True)
+            self.findChild(QtWidgets.QLabel, 'exposureLabel').setEnabled(True)
+            min_val, max_val = self.controller.get_exposure_range()
+            self.exposureSlider.setRange(int(min_val), int(max_val))
+            self.exposureSpinBox.setRange(min_val, max_val)
+            if hasattr(self.controller, 'has_exposure_auto') and self.controller.has_exposure_auto():
+                self.exposureCheckBox.setChecked(self.controller.get_exposure_mode())
+            else:
+                self.exposureCheckBox.setVisible(False)
 
+        # FPS
         if not self.controller.has_FPS():
             self.fpsSlider.setVisible(False)
             self.fpsSpinBox.setVisible(False)
             self.findChild(QtWidgets.QLabel, 'fpsLabel').setVisible(False)
+            self.fpsCheckBox.setVisible(False)
         else:
             self.fpsSlider.setEnabled(True)
             self.fpsSpinBox.setEnabled(True)
@@ -573,6 +482,334 @@ class GrabberControls2GuiGUI(QtWidgets.QWidget):
             min_val, max_val = self.controller.get_FPS_range()
             self.fpsSlider.setRange(int(min_val), int(max_val))
             self.fpsSpinBox.setRange(min_val, max_val)
+            if hasattr(self.controller, 'has_FPS_auto') and self.controller.has_FPS_auto():
+                self.fpsCheckBox.setChecked(self.controller.get_FPS_mode())
+            else:
+                self.fpsCheckBox.setVisible(False)
+
+        # Brightness
+        if not self.controller.has_brightness():
+            self.brightnessSlider.setVisible(False)
+            self.brightnessSpinBox.setVisible(False)
+            self.findChild(QtWidgets.QLabel, 'brightnessLabel').setVisible(False)
+            self.brightnessCheckBox.setVisible(False)
+        else:
+            self.brightnessSlider.setEnabled(True)
+            self.brightnessSpinBox.setEnabled(True)
+            self.findChild(QtWidgets.QLabel, 'brightnessLabel').setEnabled(True)
+            min_val, max_val = self.controller.get_brightness_range()
+            self.brightnessSlider.setRange(int(min_val), int(max_val))
+            self.brightnessSpinBox.setRange(min_val, max_val)
+            if hasattr(self.controller, 'has_brightness_auto') and self.controller.has_brightness_auto():
+                self.brightnessCheckBox.setChecked(self.controller.get_brightness_mode())
+            else:
+                self.brightnessCheckBox.setVisible(False)
+
+        # Shutter
+        if not self.controller.has_shutter():
+            self.shutterSlider.setVisible(False)
+            self.shutterSpinBox.setVisible(False)
+            self.findChild(QtWidgets.QLabel, 'shutterLabel').setVisible(False)
+            self.shutterCheckBox.setVisible(False)
+        else:
+            self.shutterSlider.setEnabled(True)
+            self.shutterSpinBox.setEnabled(True)
+            self.findChild(QtWidgets.QLabel, 'shutterLabel').setEnabled(True)
+            min_val, max_val = self.controller.get_shutter_range()
+            self.shutterSlider.setRange(int(min_val), int(max_val))
+            self.shutterSpinBox.setRange(min_val, max_val)
+            if hasattr(self.controller, 'has_shutter_auto') and self.controller.has_shutter_auto():
+                self.shutterCheckBox.setChecked(self.controller.get_shutter_mode())
+            else:
+                self.shutterCheckBox.setVisible(False)
+
+        # Iris
+        if not self.controller.has_iris():
+            self.irisSlider.setVisible(False)
+            self.irisSpinBox.setVisible(False)
+            self.findChild(QtWidgets.QLabel, 'irisLabel').setVisible(False)
+            self.irisCheckBox.setVisible(False)
+        else:
+            self.irisSlider.setEnabled(True)
+            self.irisSpinBox.setEnabled(True)
+            self.findChild(QtWidgets.QLabel, 'irisLabel').setEnabled(True)
+            min_val, max_val = self.controller.get_iris_range()
+            self.irisSlider.setRange(int(min_val), int(max_val))
+            self.irisSpinBox.setRange(min_val, max_val)
+            if hasattr(self.controller, 'has_iris_auto') and self.controller.has_iris_auto():
+                self.irisCheckBox.setChecked(self.controller.get_iris_mode())
+            else:
+                self.irisCheckBox.setVisible(False)
+
+        # Temperature
+        if not self.controller.has_temperature():
+            self.temperatureSlider.setVisible(False)
+            self.temperatureSpinBox.setVisible(False)
+            self.findChild(QtWidgets.QLabel, 'temperatureLabel').setVisible(False)
+            self.temperatureCheckBox.setVisible(False)
+        else:
+            self.temperatureSlider.setEnabled(True)
+            self.temperatureSpinBox.setEnabled(True)
+            self.findChild(QtWidgets.QLabel, 'temperatureLabel').setEnabled(True)
+            min_val, max_val = self.controller.get_temperature_range()
+            self.temperatureSlider.setRange(int(min_val), int(max_val))
+            self.temperatureSpinBox.setRange(min_val, max_val)
+            if hasattr(self.controller, 'has_temperature_auto') and self.controller.has_temperature_auto():
+                self.temperatureCheckBox.setChecked(self.controller.get_temperature_mode())
+            else:
+                self.temperatureCheckBox.setVisible(False)
+
+        # White Shading
+        if not self.controller.has_white_shading():
+            self.whiteShadingSlider.setVisible(False)
+            self.whiteShadingSpinBox.setVisible(False)
+            self.findChild(QtWidgets.QLabel, 'whiteShadingLabel').setVisible(False)
+            self.whiteShadingCheckBox.setVisible(False)
+        else:
+            self.whiteShadingSlider.setEnabled(True)
+            self.whiteShadingSpinBox.setEnabled(True)
+            self.findChild(QtWidgets.QLabel, 'whiteShadingLabel').setEnabled(True)
+            min_val, max_val = self.controller.get_white_shading_range()
+            self.whiteShadingSlider.setRange(int(min_val), int(max_val))
+            self.whiteShadingSpinBox.setRange(min_val, max_val)
+            if hasattr(self.controller, 'has_white_shading_auto') and self.controller.has_white_shading_auto():
+                self.whiteShadingCheckBox.setChecked(self.controller.get_white_shading_mode())
+            else:
+                self.whiteShadingCheckBox.setVisible(False)
+
+        # Capture Size
+        if not self.controller.has_capture_size():
+            self.captureSizeSlider.setVisible(False)
+            self.captureSizeSpinBox.setVisible(False)
+            self.findChild(QtWidgets.QLabel, 'captureSizeLabel').setVisible(False)
+            self.captureSizeCheckBox.setVisible(False)
+        else:
+            self.captureSizeSlider.setEnabled(True)
+            self.captureSizeSpinBox.setEnabled(True)
+            self.findChild(QtWidgets.QLabel, 'captureSizeLabel').setEnabled(True)
+            min_val, max_val = self.controller.get_capture_size_range()
+            self.captureSizeSlider.setRange(int(min_val), int(max_val))
+            self.captureSizeSpinBox.setRange(min_val, max_val)
+            if hasattr(self.controller, 'has_capture_size_auto') and self.controller.has_capture_size_auto():
+                self.captureSizeCheckBox.setChecked(self.controller.get_capture_size_mode())
+            else:
+                self.captureSizeCheckBox.setVisible(False)
+
+        # Capture Quality
+        if not self.controller.has_capture_quality():
+            self.captureQualitySlider.setVisible(False)
+            self.captureQualitySpinBox.setVisible(False)
+            self.findChild(QtWidgets.QLabel, 'captureQualityLabel').setVisible(False)
+            self.captureQualityCheckBox.setVisible(False)
+        else:
+            self.captureQualitySlider.setEnabled(True)
+            self.captureQualitySpinBox.setEnabled(True)
+            self.findChild(QtWidgets.QLabel, 'captureQualityLabel').setEnabled(True)
+            min_val, max_val = self.controller.get_capture_quality_range()
+            self.captureQualitySlider.setRange(int(min_val), int(max_val))
+            self.captureQualitySpinBox.setRange(min_val, max_val)
+            if hasattr(self.controller, 'has_capture_quality_auto') and self.controller.has_capture_quality_auto():
+                self.captureQualityCheckBox.setChecked(self.controller.get_capture_quality_mode())
+            else:
+                self.captureQualityCheckBox.setVisible(False)
+
+        # Mirror
+        if not self.controller.has_mirror():
+            self.mirrorSlider.setVisible(False)
+            self.mirrorSpinBox.setVisible(False)
+            self.findChild(QtWidgets.QLabel, 'mirrorLabel').setVisible(False)
+            self.mirrorCheckBox.setVisible(False)
+        else:
+            self.mirrorSlider.setEnabled(True)
+            self.mirrorSpinBox.setEnabled(True)
+            self.findChild(QtWidgets.QLabel, 'mirrorLabel').setEnabled(True)
+            min_val, max_val = self.controller.get_mirror_range()
+            self.mirrorSlider.setRange(int(min_val), int(max_val))
+            self.mirrorSpinBox.setRange(min_val, max_val)
+            if hasattr(self.controller, 'has_mirror_auto') and self.controller.has_mirror_auto():
+                self.mirrorCheckBox.setChecked(self.controller.get_mirror_mode())
+            else:
+                self.mirrorCheckBox.setVisible(False)
+
+        # Sharpness
+        if not self.controller.has_sharpness():
+            self.sharpnessSlider.setVisible(False)
+            self.sharpnessSpinBox.setVisible(False)
+            self.findChild(QtWidgets.QLabel, 'sharpnessLabel').setVisible(False)
+            self.sharpnessCheckBox.setVisible(False)
+        else:
+            self.sharpnessSlider.setEnabled(True)
+            self.sharpnessSpinBox.setEnabled(True)
+            self.findChild(QtWidgets.QLabel, 'sharpnessLabel').setEnabled(True)
+            min_val, max_val = self.controller.get_sharpness_range()
+            self.sharpnessSlider.setRange(int(min_val), int(max_val))
+            self.sharpnessSpinBox.setRange(min_val, max_val)
+            if hasattr(self.controller, 'has_sharpness_auto') and self.controller.has_sharpness_auto():
+                self.sharpnessCheckBox.setChecked(self.controller.get_sharpness_mode())
+            else:
+                self.sharpnessCheckBox.setVisible(False)
+
+        # White Balance
+        if not self.controller.has_white_balance():
+            self.whiteBalanceSlider.setVisible(False)
+            self.whiteBalanceSpinBox.setVisible(False)
+            self.findChild(QtWidgets.QLabel, 'whiteBalanceLabel').setVisible(False)
+            self.whiteBalanceCheckBox.setVisible(False)
+        else:
+            self.whiteBalanceSlider.setEnabled(True)
+            self.whiteBalanceSpinBox.setEnabled(True)
+            self.findChild(QtWidgets.QLabel, 'whiteBalanceLabel').setEnabled(True)
+            min_val, max_val = self.controller.get_white_balance_range()
+            self.whiteBalanceSlider.setRange(int(min_val), int(max_val))
+            self.whiteBalanceSpinBox.setRange(min_val, max_val)
+            if hasattr(self.controller, 'has_white_balance_auto') and self.controller.has_white_balance_auto():
+                self.whiteBalanceCheckBox.setChecked(self.controller.get_white_balance_mode())
+            else:
+                self.whiteBalanceCheckBox.setVisible(False)
+
+        # Hue
+        if not self.controller.has_hue():
+            self.hueSlider.setVisible(False)
+            self.hueSpinBox.setVisible(False)
+            self.findChild(QtWidgets.QLabel, 'hueLabel').setVisible(False)
+            self.hueCheckBox.setVisible(False)
+        else:
+            self.hueSlider.setEnabled(True)
+            self.hueSpinBox.setEnabled(True)
+            self.findChild(QtWidgets.QLabel, 'hueLabel').setEnabled(True)
+            min_val, max_val = self.controller.get_hue_range()
+            self.hueSlider.setRange(int(min_val), int(max_val))
+            self.hueSpinBox.setRange(min_val, max_val)
+            if hasattr(self.controller, 'has_hue_auto') and self.controller.has_hue_auto():
+                self.hueCheckBox.setChecked(self.controller.get_hue_mode())
+            else:
+                self.hueCheckBox.setVisible(False)
+
+        # Saturation
+        if not self.controller.has_saturation():
+            self.saturationSlider.setVisible(False)
+            self.saturationSpinBox.setVisible(False)
+            self.findChild(QtWidgets.QLabel, 'saturationLabel').setVisible(False)
+            self.saturationCheckBox.setVisible(False)
+        else:
+            self.saturationSlider.setEnabled(True)
+            self.saturationSpinBox.setEnabled(True)
+            self.findChild(QtWidgets.QLabel, 'saturationLabel').setEnabled(True)
+            min_val, max_val = self.controller.get_saturation_range()
+            self.saturationSlider.setRange(int(min_val), int(max_val))
+            self.saturationSpinBox.setRange(min_val, max_val)
+            if hasattr(self.controller, 'has_saturation_auto') and self.controller.has_saturation_auto():
+                self.saturationCheckBox.setChecked(self.controller.get_saturation_mode())
+            else:
+                self.saturationCheckBox.setVisible(False)
+
+        # Gamma
+        if not self.controller.has_gamma():
+            self.gammaSlider.setVisible(False)
+            self.gammaSpinBox.setVisible(False)
+            self.findChild(QtWidgets.QLabel, 'gammaLabel').setVisible(False)
+            self.gammaCheckBox.setVisible(False)
+        else:
+            self.gammaSlider.setEnabled(True)
+            self.gammaSpinBox.setEnabled(True)
+            self.findChild(QtWidgets.QLabel, 'gammaLabel').setEnabled(True)
+            min_val, max_val = self.controller.get_gamma_range()
+            self.gammaSlider.setRange(int(min_val), int(max_val))
+            self.gammaSpinBox.setRange(min_val, max_val)
+            if hasattr(self.controller, 'has_gamma_auto') and self.controller.has_gamma_auto():
+                self.gammaCheckBox.setChecked(self.controller.get_gamma_mode())
+            else:
+                self.gammaCheckBox.setVisible(False)
+
+        # Trigger
+        if not self.controller.has_trigger():
+            self.triggerSlider.setVisible(False)
+            self.triggerSpinBox.setVisible(False)
+            self.findChild(QtWidgets.QLabel, 'triggerLabel').setVisible(False)
+            self.triggerCheckBox.setVisible(False)
+        else:
+            self.triggerSlider.setEnabled(True)
+            self.triggerSpinBox.setEnabled(True)
+            self.findChild(QtWidgets.QLabel, 'triggerLabel').setEnabled(True)
+            min_val, max_val = self.controller.get_trigger_range()
+            self.triggerSlider.setRange(int(min_val), int(max_val))
+            self.triggerSpinBox.setRange(min_val, max_val)
+            if hasattr(self.controller, 'has_trigger_auto') and self.controller.has_trigger_auto():
+                self.triggerCheckBox.setChecked(self.controller.get_trigger_mode())
+            else:
+                self.triggerCheckBox.setVisible(False)
+
+        # Trigger Delay
+        if not self.controller.has_trigger_delay():
+            self.triggerDelaySlider.setVisible(False)
+            self.triggerDelaySpinBox.setVisible(False)
+            self.findChild(QtWidgets.QLabel, 'triggerDelayLabel').setVisible(False)
+            self.triggerDelayCheckBox.setVisible(False)
+        else:
+            self.triggerDelaySlider.setEnabled(True)
+            self.triggerDelaySpinBox.setEnabled(True)
+            self.findChild(QtWidgets.QLabel, 'triggerDelayLabel').setEnabled(True)
+            min_val, max_val = self.controller.get_trigger_delay_range()
+            self.triggerDelaySlider.setRange(int(min_val), int(max_val))
+            self.triggerDelaySpinBox.setRange(min_val, max_val)
+            if hasattr(self.controller, 'has_trigger_delay_auto') and self.controller.has_trigger_delay_auto():
+                self.triggerDelayCheckBox.setChecked(self.controller.get_trigger_delay_mode())
+            else:
+                self.triggerDelayCheckBox.setVisible(False)
+
+        # Pan
+        if not self.controller.has_pan():
+            self.panSlider.setVisible(False)
+            self.panSpinBox.setVisible(False)
+            self.findChild(QtWidgets.QLabel, 'panLabel').setVisible(False)
+            self.panCheckBox.setVisible(False)
+        else:
+            self.panSlider.setEnabled(True)
+            self.panSpinBox.setEnabled(True)
+            self.findChild(QtWidgets.QLabel, 'panLabel').setEnabled(True)
+            min_val, max_val = self.controller.get_pan_range()
+            self.panSlider.setRange(int(min_val), int(max_val))
+            self.panSpinBox.setRange(min_val, max_val)
+            if hasattr(self.controller, 'has_pan_auto') and self.controller.has_pan_auto():
+                self.panCheckBox.setChecked(self.controller.get_pan_mode())
+            else:
+                self.panCheckBox.setVisible(False)
+
+        # Tilt
+        if not self.controller.has_tilt():
+            self.tiltSlider.setVisible(False)
+            self.tiltSpinBox.setVisible(False)
+            self.findChild(QtWidgets.QLabel, 'tiltLabel').setVisible(False)
+            self.tiltCheckBox.setVisible(False)
+        else:
+            self.tiltSlider.setEnabled(True)
+            self.tiltSpinBox.setEnabled(True)
+            self.findChild(QtWidgets.QLabel, 'tiltLabel').setEnabled(True)
+            min_val, max_val = self.controller.get_tilt_range()
+            self.tiltSlider.setRange(int(min_val), int(max_val))
+            self.tiltSpinBox.setRange(min_val, max_val)
+            if hasattr(self.controller, 'has_tilt_auto') and self.controller.has_tilt_auto():
+                self.tiltCheckBox.setChecked(self.controller.get_tilt_mode())
+            else:
+                self.tiltCheckBox.setVisible(False)
+
+        # Optical Filter
+        if not self.controller.has_optical_filter():
+            self.opticalFilterSlider.setVisible(False)
+            self.opticalFilterSpinBox.setVisible(False)
+            self.findChild(QtWidgets.QLabel, 'opticalFilterLabel').setVisible(False)
+            self.opticalFilterCheckBox.setVisible(False)
+        else:
+            self.opticalFilterSlider.setEnabled(True)
+            self.opticalFilterSpinBox.setEnabled(True)
+            self.findChild(QtWidgets.QLabel, 'opticalFilterLabel').setEnabled(True)
+            min_val, max_val = self.controller.get_optical_filter_range()
+            self.opticalFilterSlider.setRange(int(min_val), int(max_val))
+            self.opticalFilterSpinBox.setRange(min_val, max_val)
+            if hasattr(self.controller, 'has_optical_filter_auto') and self.controller.has_optical_filter_auto():
+                self.opticalFilterCheckBox.setChecked(self.controller.get_optical_filter_mode())
+            else:
+                self.opticalFilterCheckBox.setVisible(False)
 
     def updateCameraView(self):
         try:
@@ -910,3 +1147,141 @@ class GrabberControls2GuiGUI(QtWidgets.QWidget):
         if optical_filter != self.opticalFilterSlider.value():
             self.controller.set_optical_filter(optical_filter)
             self.opticalFilterSlider.setValue(optical_filter)
+
+    def onGainCheckBoxChanged(self):
+        if self.gainCheckBox.isChecked():
+            self.controller.set_gain_mode(yarp.MODE_AUTO)
+        else:
+            self.controller.set_gain_mode(yarp.MODE_MANUAL)
+
+    def onZoomCheckBoxChanged(self):
+        if self.zoomCheckBox.isChecked():
+            self.controller.set_zoom_mode(yarp.MODE_AUTO)
+        else:
+            self.controller.set_zoom_mode(yarp.MODE_MANUAL)
+
+    def onFocusCheckBoxChanged(self):
+        if self.focusCheckBox.isChecked():
+            self.controller.set_focus_mode(yarp.MODE_AUTO)
+        else:
+            self.controller.set_focus_mode(yarp.MODE_MANUAL)
+
+    def onExposureCheckBoxChanged(self):
+        if self.exposureCheckBox.isChecked():
+            self.controller.set_exposure_mode(yarp.MODE_AUTO)
+        else:
+            self.controller.set_exposure_mode(yarp.MODE_MANUAL)
+
+    def onfpsCheckBoxChanged(self):
+        if self.fpsCheckBox.isChecked():
+            self.controller.set_FPS_mode(yarp.MODE_AUTO)
+        else:
+            self.controller.set_FPS_mode(yarp.MODE_MANUAL)
+
+    def onBrightnessCheckBoxChanged(self):
+        if self.brightnessCheckBox.isChecked():
+            self.controller.set_brightness_mode(yarp.MODE_AUTO)
+        else:
+            self.controller.set_brightness_mode(yarp.MODE_MANUAL)
+
+    def onShutterCheckBoxChanged(self):
+        if self.shutterCheckBox.isChecked():
+            self.controller.set_shutter_mode(yarp.MODE_AUTO)
+        else:
+            self.controller.set_shutter_mode(yarp.MODE_MANUAL)
+
+    def onIrisCheckBoxChanged(self):
+        if self.irisCheckBox.isChecked():
+            self.controller.set_iris_mode(yarp.MODE_AUTO)
+        else:
+            self.controller.set_iris_mode(yarp.MODE_MANUAL)
+
+    def onTemperatureCheckBoxChanged(self):
+        if self.temperatureCheckBox.isChecked():
+            self.controller.set_temperature_mode(yarp.MODE_AUTO)
+        else:
+            self.controller.set_temperature_mode(yarp.MODE_MANUAL)
+
+    def onWhiteShadingCheckBoxChanged(self):
+        if self.whiteShadingCheckBox.isChecked():
+            self.controller.set_white_shading_mode(yarp.MODE_AUTO)
+        else:
+            self.controller.set_white_shading_mode(yarp.MODE_MANUAL)
+
+    def onCaptureSizeCheckBoxChanged(self):
+        if self.captureSizeCheckBox.isChecked():
+            self.controller.set_capture_size_mode(yarp.MODE_AUTO)
+        else:
+            self.controller.set_capture_size_mode(yarp.MODE_MANUAL)
+
+    def onCaptureQualityCheckBoxChanged(self):
+        if self.captureQualityCheckBox.isChecked():
+            self.controller.set_capture_quality_mode(yarp.MODE_AUTO)
+        else:
+            self.controller.set_capture_quality_mode(yarp.MODE_MANUAL)
+
+    def onMirrorCheckBoxChanged(self):
+        if self.mirrorCheckBox.isChecked():
+            self.controller.set_mirror_mode(yarp.MODE_AUTO)
+        else:
+            self.controller.set_mirror_mode(yarp.MODE_MANUAL)
+
+    def onSharpnessCheckBoxChanged(self):
+        if self.sharpnessCheckBox.isChecked():
+            self.controller.set_sharpness_mode(yarp.MODE_AUTO)
+        else:
+            self.controller.set_sharpness_mode(yarp.MODE_MANUAL)
+
+    def onWhiteBalanceCheckBoxChanged(self):
+        if self.whiteBalanceCheckBox.isChecked():
+            self.controller.set_white_balance_mode(yarp.MODE_AUTO)
+        else:
+            self.controller.set_white_balance_mode(yarp.MODE_MANUAL)
+
+    def onHueCheckBoxChanged(self):
+        if self.hueCheckBox.isChecked():
+            self.controller.set_hue_mode(yarp.MODE_AUTO)
+        else:
+            self.controller.set_hue_mode(yarp.MODE_MANUAL)
+
+    def onSaturationCheckBoxChanged(self):
+        if self.saturationCheckBox.isChecked():
+            self.controller.set_saturation_mode(yarp.MODE_AUTO)
+        else:
+            self.controller.set_saturation_mode(yarp.MODE_MANUAL)
+
+    def onGammaCheckBoxChanged(self):
+        if self.gammaCheckBox.isChecked():
+            self.controller.set_gamma_mode(yarp.MODE_AUTO)
+        else:
+            self.controller.set_gamma_mode(yarp.MODE_MANUAL)
+
+    def onTriggerCheckBoxChanged(self):
+        if self.triggerCheckBox.isChecked():
+            self.controller.set_trigger_mode(yarp.MODE_AUTO)
+        else:
+            self.controller.set_trigger_mode(yarp.MODE_MANUAL)
+
+    def onTriggerDelayCheckBoxChanged(self):
+        if self.triggerDelayCheckBox.isChecked():
+            self.controller.set_trigger_delay_mode(yarp.MODE_AUTO)
+        else:
+            self.controller.set_trigger_delay_mode(yarp.MODE_MANUAL)
+
+    def onPanCheckBoxChanged(self):
+        if self.panCheckBox.isChecked():
+            self.controller.set_pan_mode(yarp.MODE_AUTO)
+        else:
+            self.controller.set_pan_mode(yarp.MODE_MANUAL)
+
+    def onTiltCheckBoxChanged(self):
+        if self.tiltCheckBox.isChecked():
+            self.controller.set_tilt_mode(yarp.MODE_AUTO)
+        else:
+            self.controller.set_tilt_mode(yarp.MODE_MANUAL)
+
+    def onOpticalFilterCheckBoxChanged(self):
+        if self.opticalFilterCheckBox.isChecked():
+            self.controller.set_optical_filter_mode(yarp.MODE_AUTO)
+        else:
+            self.controller.set_optical_filter_mode(yarp.MODE_MANUAL)
