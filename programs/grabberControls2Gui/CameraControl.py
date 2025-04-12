@@ -45,7 +45,7 @@ class Camera(QtCore.QObject):
 
     def updateCameraView(self):
         """Actualiza la vista con un nuevo frame"""
-        yarp_img = self.camera_port.read(False)
+        yarp_img = self.camera_port.read(True)
         if yarp_img is None:
             print("Advertencia: No hay imagen disponible")
             return
