@@ -14,6 +14,7 @@ import ctypes
 import yarp
 from PySide2 import QtCore, QtGui, QtWidgets
 from PySide2 import QtUiTools
+from .CameraControl import Camera
 
 
 def load_ui(file_name, where=None):
@@ -43,15 +44,6 @@ class GrabberControls2GuiGUI(QtWidgets.QWidget):
     def __init__(self, controller, remote_port, parent=None):
         super().__init__(parent)
         self.controller = controller
-
-        # Configuración robusta del puerto de imágenes
-        self.camera_port = yarp.BufferedPortImageRgb()
-
-        if not self.camera_port.open("/viewer") or not yarp.Network.connect(remote_port, "/viewer"):
-            return
-
-        self.camera_port.setStrict(False)
-        self.camera_port.setReadOnly()
 
         self.zoomSlider = None
         self.zoomSpinBox = None
@@ -125,7 +117,6 @@ class GrabberControls2GuiGUI(QtWidgets.QWidget):
         self.tiltLayout = None
         self.opticalFilterLayout = None
         self.current_pixmap = None
-        self.cameraView = None
 
         # Auto checkboxes
         self.zoomCheckBox = None
@@ -153,8 +144,10 @@ class GrabberControls2GuiGUI(QtWidgets.QWidget):
         self.opticalFilterCheckBox = None
 
         self.setupUI()
+
+        self.camera = Camera(remote_port, parent_widget=self)
+
         self.resetValues()
-        self.startCameraReading()
 
     def setupUI(self):
         # Load UI and set it as main layout
@@ -261,14 +254,6 @@ class GrabberControls2GuiGUI(QtWidgets.QWidget):
         self.panCheckBox = self.findChild(QtWidgets.QCheckBox, 'pancheckBox')
         self.tiltCheckBox = self.findChild(QtWidgets.QCheckBox, 'tiltcheckBox')
         self.opticalFilterCheckBox = self.findChild(QtWidgets.QCheckBox, 'opticalFiltercheckBox')
-
-        self.cameraView = self.findChild(QtWidgets.QLabel, 'cameraView')
-        if self.cameraView is not None:
-            self.cameraView.setText("Esperando imagen de la cámara...")
-
-        self.setMinimumSize(640, 480)
-        self.cameraView.setScaledContents(False)
-        self.cameraView.setSizePolicy(QtWidgets.QSizePolicy.Ignored, QtWidgets.QSizePolicy.Ignored)
 
         # Set visibility of widgets based on controller features
         self.visibility()
@@ -900,64 +885,6 @@ class GrabberControls2GuiGUI(QtWidgets.QWidget):
                 self.opticalFilterCheckBox.setChecked(self.controller.get_optical_filter_mode())
             else:
                 self.opticalFilterCheckBox.setVisible(False)
-
-    def updateCameraView(self):
-        try:
-            # Leer imagen del puerto YARP (non-blocking)
-            yarp_img = self.camera_port.read(False)
-
-            if yarp_img is None:
-                return  # No hay nueva imagen disponible
-
-            # Obtener dimensiones
-            width = yarp_img.width()
-            height = yarp_img.height()
-
-            if width <= 0 or height <= 0:
-                print("Dimensiones de imagen inválidas")
-                return
-
-            # Obtener el buffer de datos como bytes
-            img_ptr = int(yarp_img.getRawImage())
-            img_size = yarp_img.getRawImageSize()
-
-            # Crear bytes usando ctypes (forma correcta)
-            img_data = (ctypes.c_ubyte * img_size).from_address(img_ptr)
-            img_bytes = bytes(img_data)
-
-            # Crear QImage
-            qimage = QtGui.QImage(img_bytes, width, height, yarp_img.getRowSize(), QtGui.QImage.Format_RGB888)
-
-            if qimage.isNull():
-                print("No se pudo crear QImage")
-                return
-
-            # Actualizar la visualización
-            self.current_pixmap = QtGui.QPixmap.fromImage(qimage)
-            self.updateScaledPixmap()
-
-        except Exception as e:
-            print(f"Error al procesar imagen: {str(e)}")
-
-    def startCameraReading(self):
-        """Inicia el streaming forzando la conexión"""
-        # Enviar comando de inicio (si tu dispositivo lo soporta)
-        if hasattr(self.controller, 'start'):
-            self.controller.start()
-
-        # Temporizador para actualización
-        self._timer = QtCore.QTimer(self)
-        self._timer.timeout.connect(self.updateCameraView)
-        self._timer.start(33)  # ~30 fps
-
-    def updateScaledPixmap(self):
-        if self.current_pixmap is not None and self.cameraView is not None:
-            scaled_pixmap = self.current_pixmap.scaled(
-                self.cameraView.size(),
-                QtCore.Qt.KeepAspectRatio,
-                QtCore.Qt.SmoothTransformation
-            )
-            self.cameraView.setPixmap(scaled_pixmap)
 
     # -------------------------------------------------------------------------
     # Slots de los sliders/spinBoxes -> llaman a métodos de controller (backend)
