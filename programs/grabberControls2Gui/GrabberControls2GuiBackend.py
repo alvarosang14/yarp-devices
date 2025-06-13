@@ -26,7 +26,7 @@ class GrabberControls2GuiBackend:
     def get_zoom_range(self):
         value1 = yarp.DVector(1)
         value2 = yarp.DVector(1)
-        self.controls.getFeature2(yarp.YARP_FEATURE_ZOOM, value1, value2)
+        self.controls.getFeature(yarp.YARP_FEATURE_ZOOM, value1, value2)
         return value1[0], value2[0]
 
     def get_zoom_mode(self):
@@ -53,7 +53,7 @@ class GrabberControls2GuiBackend:
     def get_focus_range(self):
         value1 = yarp.DVector(1)
         value2 = yarp.DVector(1)
-        self.controls.getFeature2(yarp.YARP_FEATURE_FOCUS, value1, value2)
+        self.controls.getFeature(yarp.YARP_FEATURE_FOCUS, value1, value2)
         return value1[0], value2[0]
 
     def get_focus_mode(self):
@@ -80,7 +80,7 @@ class GrabberControls2GuiBackend:
     def get_gain_range(self):
         value1 = yarp.DVector(1)
         value2 = yarp.DVector(1)
-        self.controls.getFeature2(yarp.YARP_FEATURE_GAIN, value1, value2)
+        self.controls.getFeature(yarp.YARP_FEATURE_GAIN, value1, value2)
         return value1[0], value2[0]
 
     def get_gain_mode(self):
@@ -107,7 +107,7 @@ class GrabberControls2GuiBackend:
     def get_exposure_range(self):
         value1 = yarp.DVector(1)
         value2 = yarp.DVector(1)
-        self.controls.getFeature2(yarp.YARP_FEATURE_EXPOSURE, value1, value2)
+        self.controls.getFeature(yarp.YARP_FEATURE_EXPOSURE, value1, value2)
         return value1[0], value2[0]
 
     def get_exposure_mode(self):
@@ -134,7 +134,7 @@ class GrabberControls2GuiBackend:
     def get_FPS_range(self):
         value1 = yarp.DVector(1)
         value2 = yarp.DVector(1)
-        self.controls.getFeature2(yarp.YARP_FEATURE_FRAME_RATE, value1, value2)
+        self.controls.getFeature(yarp.YARP_FEATURE_FRAME_RATE, value1, value2)
         return value1[0], value2[0]
 
     def get_FPS_mode(self):
@@ -161,7 +161,7 @@ class GrabberControls2GuiBackend:
     def get_brightness_range(self):
         value1 = yarp.DVector(1)
         value2 = yarp.DVector(1)
-        self.controls.getFeature2(yarp.YARP_FEATURE_BRIGHTNESS, value1, value2)
+        self.controls.getFeature(yarp.YARP_FEATURE_BRIGHTNESS, value1, value2)
         return value1[0], value2[0]
 
     def get_brightness_mode(self):
@@ -188,7 +188,7 @@ class GrabberControls2GuiBackend:
     def get_shutter_range(self):
         value1 = yarp.DVector(1)
         value2 = yarp.DVector(1)
-        self.controls.getFeature2(yarp.YARP_FEATURE_SHUTTER, value1, value2)
+        self.controls.getFeature(yarp.YARP_FEATURE_SHUTTER, value1, value2)
         return value1[0], value2[0]
 
     def get_shutter_mode(self):
@@ -215,7 +215,7 @@ class GrabberControls2GuiBackend:
     def get_iris_range(self):
         value1 = yarp.DVector(1)
         value2 = yarp.DVector(1)
-        self.controls.getFeature2(yarp.YARP_FEATURE_IRIS, value1, value2)
+        self.controls.getFeature(yarp.YARP_FEATURE_IRIS, value1, value2)
         return value1[0], value2[0]
 
     def get_iris_mode(self):
@@ -242,7 +242,7 @@ class GrabberControls2GuiBackend:
     def get_white_balance_range(self):
         value1 = yarp.DVector(1)
         value2 = yarp.DVector(1)
-        self.controls.getFeature2(yarp.YARP_FEATURE_WHITE_BALANCE, value1, value2)
+        self.controls.getFeature(yarp.YARP_FEATURE_WHITE_BALANCE, value1, value2)
         return value1[0], value2[0]
 
     def get_white_balance_mode(self):
@@ -269,7 +269,7 @@ class GrabberControls2GuiBackend:
     def get_hue_range(self):
         value1 = yarp.DVector(1)
         value2 = yarp.DVector(1)
-        self.controls.getFeature2(yarp.YARP_FEATURE_HUE, value1, value2)
+        self.controls.getFeature(yarp.YARP_FEATURE_HUE, value1, value2)
         return value1[0], value2[0]
 
     def get_hue_mode(self):
@@ -296,7 +296,7 @@ class GrabberControls2GuiBackend:
     def get_saturation_range(self):
         value1 = yarp.DVector(1)
         value2 = yarp.DVector(1)
-        self.controls.getFeature2(yarp.YARP_FEATURE_SATURATION, value1, value2)
+        self.controls.getFeature(yarp.YARP_FEATURE_SATURATION, value1, value2)
         return value1[0], value2[0]
 
     def get_saturation_mode(self):
@@ -323,7 +323,7 @@ class GrabberControls2GuiBackend:
     def get_gamma_range(self):
         value1 = yarp.DVector(1)
         value2 = yarp.DVector(1)
-        self.controls.getFeature2(yarp.YARP_FEATURE_GAMMA, value1, value2)
+        self.controls.getFeature(yarp.YARP_FEATURE_GAMMA, value1, value2)
         return value1[0], value2[0]
 
     def get_gamma_mode(self):
@@ -350,7 +350,7 @@ class GrabberControls2GuiBackend:
     def get_temperature_range(self):
         value1 = yarp.DVector(1)
         value2 = yarp.DVector(1)
-        self.controls.getFeature2(yarp.YARP_FEATURE_TEMPERATURE, value1, value2)
+        self.controls.getFeature(yarp.YARP_FEATURE_TEMPERATURE, value1, value2)
         return value1[0], value2[0]
 
     def get_temperature_mode(self):
@@ -377,7 +377,7 @@ class GrabberControls2GuiBackend:
     def get_sharpness_range(self):
         value1 = yarp.DVector(1)
         value2 = yarp.DVector(1)
-        self.controls.getFeature2(yarp.YARP_FEATURE_SHARPNESS, value1, value2)
+        self.controls.getFeature(yarp.YARP_FEATURE_SHARPNESS, value1, value2)
         return value1[0], value2[0]
 
     def get_sharpness_mode(self):
@@ -404,7 +404,7 @@ class GrabberControls2GuiBackend:
     def get_trigger_range(self):
         value1 = yarp.DVector(1)
         value2 = yarp.DVector(1)
-        self.controls.getFeature2(yarp.YARP_FEATURE_TRIGGER, value1, value2)
+        self.controls.getFeature(yarp.YARP_FEATURE_TRIGGER, value1, value2)
         return value1[0], value2[0]
 
     def get_trigger_mode(self):
@@ -431,7 +431,7 @@ class GrabberControls2GuiBackend:
     def get_trigger_delay_range(self):
         value1 = yarp.DVector(1)
         value2 = yarp.DVector(1)
-        self.controls.getFeature2(yarp.YARP_FEATURE_TRIGGER_DELAY, value1, value2)
+        self.controls.getFeature(yarp.YARP_FEATURE_TRIGGER_DELAY, value1, value2)
         return value1[0], value2[0]
 
     def get_trigger_delay_mode(self):
@@ -458,7 +458,7 @@ class GrabberControls2GuiBackend:
     def get_white_shading_range(self):
         value1 = yarp.DVector(1)
         value2 = yarp.DVector(1)
-        self.controls.getFeature2(yarp.YARP_FEATURE_WHITE_SHADING, value1, value2)
+        self.controls.getFeature(yarp.YARP_FEATURE_WHITE_SHADING, value1, value2)
         return value1[0], value2[0]
 
     def get_white_shading_mode(self):
@@ -485,7 +485,7 @@ class GrabberControls2GuiBackend:
     def get_pan_range(self):
         value1 = yarp.DVector(1)
         value2 = yarp.DVector(1)
-        self.controls.getFeature2(yarp.YARP_FEATURE_PAN, value1, value2)
+        self.controls.getFeature(yarp.YARP_FEATURE_PAN, value1, value2)
         return value1[0], value2[0]
 
     def get_pan_mode(self):
@@ -512,7 +512,7 @@ class GrabberControls2GuiBackend:
     def get_tilt_range(self):
         value1 = yarp.DVector(1)
         value2 = yarp.DVector(1)
-        self.controls.getFeature2(yarp.YARP_FEATURE_TILT, value1, value2)
+        self.controls.getFeature(yarp.YARP_FEATURE_TILT, value1, value2)
         return value1[0], value2[0]
 
     def get_tilt_mode(self):
@@ -539,7 +539,7 @@ class GrabberControls2GuiBackend:
     def get_optical_filter_range(self):
         value1 = yarp.DVector(1)
         value2 = yarp.DVector(1)
-        self.controls.getFeature2(yarp.YARP_FEATURE_OPTICAL_FILTER, value1, value2)
+        self.controls.getFeature(yarp.YARP_FEATURE_OPTICAL_FILTER, value1, value2)
         return value1[0], value2[0]
 
     def get_optical_filter_mode(self):
@@ -566,7 +566,7 @@ class GrabberControls2GuiBackend:
     def get_capture_size_range(self):
         value1 = yarp.DVector(1)
         value2 = yarp.DVector(1)
-        self.controls.getFeature2(yarp.YARP_FEATURE_CAPTURE_SIZE, value1, value2)
+        self.controls.getFeature(yarp.YARP_FEATURE_CAPTURE_SIZE, value1, value2)
         return value1[0], value2[0]
 
     def get_capture_size_mode(self):
@@ -593,7 +593,7 @@ class GrabberControls2GuiBackend:
     def get_capture_quality_range(self):
         value1 = yarp.DVector(1)
         value2 = yarp.DVector(1)
-        self.controls.getFeature2(yarp.YARP_FEATURE_CAPTURE_QUALITY, value1, value2)
+        self.controls.getFeature(yarp.YARP_FEATURE_CAPTURE_QUALITY, value1, value2)
         return value1[0], value2[0]
 
     def get_capture_quality_mode(self):
@@ -620,7 +620,7 @@ class GrabberControls2GuiBackend:
     def get_mirror_range(self):
         value1 = yarp.DVector(1)
         value2 = yarp.DVector(1)
-        self.controls.getFeature2(yarp.YARP_FEATURE_MIRROR, value1, value2)
+        self.controls.getFeature(yarp.YARP_FEATURE_MIRROR, value1, value2)
         return value1[0], value2[0]
 
     def get_mirror_mode(self):

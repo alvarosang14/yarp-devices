@@ -38,13 +38,12 @@ def main(remote_port: 'Remote port running the AravisGigE grabber' = '/grabber')
 
     driver = yarp.PolyDriver(options)
     if not driver.isValid():
-        print("ERROR: No se pudo conectar al dispositivo")
+        print("ERROR: Could not connect to the device)
         return 1
 
-    # Crear y mostrar GUI
+    # Make GUI
     app = QtWidgets.QApplication(sys.argv)
     controls = driver.viewIFrameGrabberControls()
-    print("Métodos disponibles en controls:", dir(controls))
     backend = GrabberControls2GuiBackend(controls) if controls else None
     gui = GrabberControls2GuiGUI(backend, remote_port)
     gui.show()

@@ -18,43 +18,43 @@ class Camera(QtCore.QObject):
         self.startCameraReading()
 
     def setup_camera_port(self, remote_port):
-        """Configura el puerto YARP para recibir imágenes"""
-        yarp.Network.init()  # Asegurar que YARP está inicializado
+        """Configures the YARP port to receive images"""
+        yarp.Network.init()  # Ensure YARP is initialized
 
         self.camera_port = yarp.BufferedPortImageRgb()
         local_port = "/viewer/image:i"
 
         if not self.camera_port.open(local_port):
-            print(f"Error: No se pudo abrir el puerto {local_port}")
+            print(f"Error: Could not open port {local_port}")
             return False
 
         if not yarp.Network.connect(remote_port, local_port):
-            print(f"Error: No se pudo conectar {remote_port} a {local_port}")
+            print(f"Error: Could not connect {remote_port} to {local_port}")
             return False
 
         return True
 
     def setup_camera_view(self):
-        """Configura el widget de visualización"""
+        """Sets up the display widget"""
         if self.parent_widget:
             self.cameraView = self.parent_widget.findChild(QtWidgets.QLabel, 'cameraView')
 
-            self.cameraView.setText("Esperando imagen de la cámara...")
+            self.cameraView.setText("Waiting for camera image...")
             self.cameraView.setAlignment(QtCore.Qt.AlignCenter)
             self.cameraView.setScaledContents(False)
 
     def updateCameraView(self):
-        """Actualiza la vista con un nuevo frame"""
+        """Updates the view with a new frame"""
         yarp_img = self.camera_port.read(True)
         if yarp_img is None:
-            print("Advertencia: No hay imagen disponible")
+            print("Warning: No image available")
             return
 
         width, height = yarp_img.width(), yarp_img.height()
         if width <= 0 or height <= 0:
             return
 
-        # Convertir imagen YARP a QPixmap
+        # Convert YARP image to QPixmap
         img_ptr = int(yarp_img.getRawImage())
         img_size = yarp_img.getRawImageSize()
         img_data = (ctypes.c_ubyte * img_size).from_address(img_ptr)
@@ -72,7 +72,7 @@ class Camera(QtCore.QObject):
             self.updateScaledPixmap()
 
     def startCameraReading(self):
-        """Inicia el stream de video"""
+        """Starts the video stream"""
         if self._timer is not None:
             self._timer.stop()
 
@@ -81,7 +81,7 @@ class Camera(QtCore.QObject):
         self._timer.start(33)  # ~30 fps
 
     def updateScaledPixmap(self):
-        """Escala la imagen al tamaño del widget"""
+        """Scales the image to the widget size"""
         if self.current_pixmap and self.cameraView:
             scaled_pixmap = self.current_pixmap.scaled(
                 self.cameraView.size(),
@@ -91,7 +91,7 @@ class Camera(QtCore.QObject):
             self.cameraView.setPixmap(scaled_pixmap)
 
     def stop(self):
-        """Detiene la captura de imágenes y limpia los recursos"""
+        """Stops image capture and releases resources"""
         if self._timer:
             self._timer.stop()
             self._timer = None
@@ -103,6 +103,6 @@ class Camera(QtCore.QObject):
             self.camera_port = None
 
     def resizeEvent(self, event):
-        """Maneja el redimensionamiento del widget"""
+        """Handles widget resizing"""
         self.updateScaledPixmap()
         event.accept()
