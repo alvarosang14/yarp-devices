@@ -22,7 +22,7 @@ bool AravisGigE::open(yarp::os::Searchable &config)
 
     //-- Open Aravis device(s)
     //-------------------------------------------------------------------------------
-    int index = config.check("index", yarp::os::Value(0), "camera index").asInt32();
+    int index = config.check("index", yarp::os::Value(0), "camera treindex").asInt32();
 
     arv_update_device_list();
 
@@ -217,7 +217,7 @@ bool AravisGigE::open(yarp::os::Searchable &config)
 
     yCInfo(ARV) << "Aravis Camera acquisition started!";
 
-    // Controls (See the next line)
+    // Controls terminal
     if (config.check("terminal", "enable interactive terminal")) {
         yCInfo(ARV) << "Entering interactive mode...";
         useLogFile = true;

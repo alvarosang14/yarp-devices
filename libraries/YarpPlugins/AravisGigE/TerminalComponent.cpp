@@ -85,7 +85,7 @@ void AravisGigE::runInteractiveTerminal() {
 
             double value;
             try {
-                value = std::stod(tokens[2]); // Convertir a número
+                value = std::stod(tokens[2]);
             } catch (const std::exception &e) {
                 std::cout << "Invalid value format.\n";
                 continue;

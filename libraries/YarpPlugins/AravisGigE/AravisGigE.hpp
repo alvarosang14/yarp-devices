@@ -115,7 +115,7 @@ private:
     unsigned        frameID {0};            // current frame id
     unsigned        prevFrameID {0};
 
-    // Mapa de características con toda la metadata
+    // Feature map with all the metadata
     const std::map<cameraFeature_id_t, FeatureInfo> yarp_arv_int_feature_map = {
         {YARP_FEATURE_BRIGHTNESS, {"Brightness", "BrightnessEnabled", "BrightnessAuto", false}},
         {YARP_FEATURE_SHUTTER, {"Shutter", "ShutterEnabled", "ShutterAuto", true}},
