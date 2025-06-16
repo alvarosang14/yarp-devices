@@ -564,7 +564,7 @@ void AravisGigE::printFeatureInfo(cameraFeature_id_t featureId, const FeatureInf
 
     bool jauto;
     if (hasAuto(featureId, &jauto)) {
-        std::cout << "  jauto: " << (jauto ? "Yes" : "No") << "\n";
+        std::cout << "  auto: " << (jauto ? "Yes" : "No") << "\n";
     }
 
 }
