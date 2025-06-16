@@ -1,3 +1,14 @@
+/*
+ * AravisGigE
+ * ---------------------
+ *
+ * Middleware for industrial camera integration in YARP using the Aravis library.
+ *
+ * Author: Álvaro Santos García
+ * Copyright: Universidad Carlos III de Madrid (C) 2025
+ * CopyPolicy: Released under the terms of the GNU LGPL v2.1
+ */
+
 #include <yarp/os/LogStream.h>
 #include <iostream>
 #include <sstream>

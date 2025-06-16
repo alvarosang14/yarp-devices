@@ -1,12 +1,12 @@
 """
-AravisGigEController
+GrabberControls2Gui
 ---------------------
 
-Frontend for the AravisGigEController
+Simple GUI for controlling GigE cameras using Aravis and YARP
 
-Author: David Estevez
-Copyright: Universidad Carlos III de Madrid (C) 2017;
-CopyPolicy: Released under the terms of the GNU GPL v2.0.
+Author: Álvaro Santos García  
+Copyright: Universidad Carlos III de Madrid (C) 2025  
+CopyPolicy: Released under the terms of the GNU LGPL v2.1
 """
 
 import os
